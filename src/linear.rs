@@ -14,14 +14,14 @@ impl Kernel<Vec<f64>> for Linear {
         Ok(())
     }
 
-    fn value(&self, x: &Vec<f64>, x_prime: &Vec<f64>) -> f64 {
-        x.par_iter()
+    fn value(&self, x: &Vec<f64>, x_prime: &Vec<f64>) -> Result<f64, String> {
+        Ok(x.par_iter()
             .zip(x_prime.par_iter())
             .map(|(x_i, x_prime_i)| x_i * x_prime_i)
-            .sum()
+            .sum())
     }
 
-    fn grad(&self, _: &Vec<f64>, _: &Vec<f64>) -> Box<dyn Fn(&[f64]) -> Vec<f64>> {
-        Box::new(|_| vec![])
+    fn grad(&self, _: &Vec<f64>, _: &Vec<f64>) -> Result<Box<dyn Fn(&[f64]) -> Vec<f64>>, String> {
+        Ok(Box::new(|_| vec![]))
     }
 }

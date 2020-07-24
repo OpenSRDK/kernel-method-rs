@@ -9,8 +9,8 @@ use std::fmt::Debug;
 pub trait Kernel<T>: Clone + Debug + Send + Sync {
     fn get_params(&self) -> &[f64];
     fn set_params(&mut self, params: &[f64]) -> Result<(), String>;
-    fn value(&self, x: &T, x_prime: &T) -> f64;
-    fn grad(&self, x: &T, x_prime: &T) -> Box<dyn Fn(&[f64]) -> Vec<f64>>;
+    fn value(&self, x: &T, x_prime: &T) -> Result<f64, String>;
+    fn grad(&self, x: &T, x_prime: &T) -> Result<Box<dyn Fn(&[f64]) -> Vec<f64>>, String>;
 }
 
 #[cfg(test)]
