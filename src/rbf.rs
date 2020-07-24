@@ -19,7 +19,7 @@ impl Default for RBF {
     }
 }
 
-impl Kernel<[f64]> for RBF {
+impl Kernel<Vec<f64>> for RBF {
     fn get_params(&self) -> &[f64] {
         &self.params
     }
@@ -36,7 +36,7 @@ impl Kernel<[f64]> for RBF {
         Ok(())
     }
 
-    fn value(&self, x: &[f64], x_prime: &[f64]) -> f64 {
+    fn value(&self, x: &Vec<f64>, x_prime: &Vec<f64>) -> f64 {
         let norm: f64 = x
             .par_iter()
             .zip(x_prime.par_iter())
@@ -46,7 +46,7 @@ impl Kernel<[f64]> for RBF {
         self.params[0] * (-1.0 * norm / self.params[1]).exp()
     }
 
-    fn grad(&self, x: &[f64], x_prime: &[f64]) -> Box<dyn Fn(&[f64]) -> Vec<f64>> {
+    fn grad(&self, x: &Vec<f64>, x_prime: &Vec<f64>) -> Box<dyn Fn(&[f64]) -> Vec<f64>> {
         let norm: f64 = x
             .par_iter()
             .zip(x_prime.par_iter())

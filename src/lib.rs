@@ -6,10 +6,7 @@ pub mod rbf;
 
 use std::fmt::Debug;
 
-pub trait Kernel<T>: Clone + Debug + Send + Sync
-where
-    T: ?Sized,
-{
+pub trait Kernel<T>: Clone + Debug + Send + Sync {
     fn get_params(&self) -> &[f64];
     fn set_params(&mut self, params: &[f64]) -> Result<(), String>;
     fn value(&self, x: &T, x_prime: &T) -> f64;
