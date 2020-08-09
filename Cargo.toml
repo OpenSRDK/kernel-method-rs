@@ -1,5 +1,5 @@
 [package]
-name = "opensrdk-kernel"
+name = "opensrdk-kernel-method"
 version = "0.1.0"
 authors = ["Kimura Yu <33382781+KimuraYu45z@users.noreply.github.com>"]
 edition = "2018"
