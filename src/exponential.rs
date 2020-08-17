@@ -2,26 +2,26 @@ use super::Kernel;
 use rayon::prelude::*;
 use std::fmt::Debug;
 
-const PARAMS_LEN: usize = 2;
+const PARAMS_LEN: usize = 1;
 
 #[derive(Clone, Debug)]
-pub struct RBF {
+pub struct Exponential {
     params: [f64; PARAMS_LEN],
 }
 
-impl RBF {
+impl Exponential {
     pub fn new(params: [f64; PARAMS_LEN]) -> Self {
         Self { params }
     }
 }
 
-impl Default for RBF {
+impl Default for Exponential {
     fn default() -> Self {
-        Self::new([1.0, 1.0])
+        Self::new([1.0])
     }
 }
 
-impl Kernel<Vec<f64>> for RBF {
+impl Kernel<Vec<f64>> for Exponential {
     fn get_params(&self) -> &[f64] {
         &self.params
     }
@@ -43,13 +43,14 @@ impl Kernel<Vec<f64>> for RBF {
             return Err("dimension mismatch".to_owned());
         }
 
-        let norm_pow: f64 = x
+        let norm: f64 = x
             .par_iter()
             .zip(x_prime.par_iter())
             .map(|(x_i, x_prime_i)| (x_i - x_prime_i).powi(2))
-            .sum();
+            .sum::<f64>()
+            .sqrt();
 
-        Ok(self.params[0] * (-norm_pow / self.params[1]).exp())
+        Ok((-norm / self.params[0]).exp())
     }
 
     fn grad(
@@ -61,11 +62,12 @@ impl Kernel<Vec<f64>> for RBF {
             return Err("dimension mismatch".to_owned());
         }
 
-        let norm_pow: f64 = x
+        let norm: f64 = x
             .par_iter()
             .zip(x_prime.par_iter())
             .map(|(x_i, x_prime_i)| (x_i - x_prime_i).powi(2))
-            .sum();
+            .sum::<f64>()
+            .sqrt();
 
         Ok(Box::new(move |params: &[f64]| {
             if params.len() != PARAMS_LEN {
@@ -73,8 +75,7 @@ impl Kernel<Vec<f64>> for RBF {
             }
             let mut grad = vec![f64::default(); PARAMS_LEN];
 
-            grad[0] = (-norm_pow / params[1]).exp();
-            grad[1] = params[0] * (-norm_pow / params[1]).exp() / params[1].powi(2);
+            grad[0] = (-norm / params[0]).exp() / params[0].powi(2);
 
             Ok(grad)
         }))

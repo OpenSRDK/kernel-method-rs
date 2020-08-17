@@ -1,9 +1,11 @@
 extern crate rayon;
 
 pub mod ard;
+pub mod exponential;
 pub mod linear;
 pub mod prelude;
 pub mod rbf;
+pub mod periodic;
 
 use std::fmt::Debug;
 
