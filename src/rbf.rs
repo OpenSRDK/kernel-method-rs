@@ -25,13 +25,13 @@ impl Kernel<Vec<f64>> for RBF {
     }
 
     fn set_params(&mut self, params: &[f64]) -> Result<(), String> {
-        let n = params.len();
-        if n != 2 {
+        if params.len() != 2 {
             return Err("dimension mismatch".to_owned());
         }
-        for i in 0..n {
-            self.params[i] = params[i];
-        }
+        self.params
+            .par_iter_mut()
+            .zip(params.par_iter())
+            .for_each(|(s, &p)| *s = p);
 
         Ok(())
     }
@@ -54,7 +54,7 @@ impl Kernel<Vec<f64>> for RBF {
         &self,
         x: &Vec<f64>,
         x_prime: &Vec<f64>,
-    ) -> Result<Box<dyn Fn(&[f64]) -> Vec<f64>>, String> {
+    ) -> Result<Box<dyn Fn(&[f64]) -> Result<Vec<f64>, String>>, String> {
         if x.len() != x_prime.len() {
             return Err("dimension mismatch".to_owned());
         }
@@ -65,13 +65,16 @@ impl Kernel<Vec<f64>> for RBF {
             .map(|(x_i, x_prime_i)| (x_i - x_prime_i).powi(2))
             .sum();
 
-        Ok(Box::new(move |params| {
+        Ok(Box::new(move |params: &[f64]| {
+            if params.len() != 2 {
+                return Err("dimension mismatch".to_owned());
+            }
             let mut grad = vec![f64::default(); 2];
 
             grad[0] = (-1.0 * norm / params[1]).exp();
             grad[1] = params[0] * norm * (-norm / params[1]).exp() / params[1].powi(2);
 
-            grad
+            Ok(grad)
         }))
     }
 }

@@ -21,7 +21,11 @@ impl Kernel<Vec<f64>> for Linear {
             .sum())
     }
 
-    fn grad(&self, _: &Vec<f64>, _: &Vec<f64>) -> Result<Box<dyn Fn(&[f64]) -> Vec<f64>>, String> {
-        Ok(Box::new(|_| vec![]))
+    fn grad(
+        &self,
+        _: &Vec<f64>,
+        _: &Vec<f64>,
+    ) -> Result<Box<dyn Fn(&[f64]) -> Result<Vec<f64>, String>>, String> {
+        Ok(Box::new(|_| Ok(vec![])))
     }
 }
