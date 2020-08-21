@@ -3,10 +3,10 @@ extern crate rayon;
 pub mod ard;
 pub mod exponential;
 pub mod linear;
-pub mod prelude;
-pub mod rbf;
 pub mod periodic;
+pub mod rbf;
 
+pub use crate::{ard::ARD, exponential::Exponential, linear::Linear, periodic::Periodic, rbf::RBF};
 use std::fmt::Debug;
 
 pub trait Kernel<T>: Clone + Debug + Send + Sync {

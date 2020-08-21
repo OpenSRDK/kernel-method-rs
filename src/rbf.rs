@@ -74,7 +74,7 @@ impl Kernel<Vec<f64>> for RBF {
             let mut grad = vec![f64::default(); PARAMS_LEN];
 
             grad[0] = (-norm_pow / params[1]).exp();
-            grad[1] = params[0] * (-norm_pow / params[1]).exp() / params[1].powi(2);
+            grad[1] = params[0] * (-norm_pow / params[1]).exp() * (norm_pow / params[1].powi(2));
 
             Ok(grad)
         }))
