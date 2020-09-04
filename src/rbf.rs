@@ -1,5 +1,7 @@
 use super::Kernel;
+use crate::KernelError;
 use rayon::prelude::*;
+use std::error::Error;
 use std::fmt::Debug;
 
 const PARAMS_LEN: usize = 2;
@@ -26,9 +28,9 @@ impl Kernel<Vec<f64>> for RBF {
         &self.params
     }
 
-    fn set_params(&mut self, params: &[f64]) -> Result<(), String> {
+    fn set_params(&mut self, params: &[f64]) -> Result<(), Box<dyn Error>> {
         if params.len() != PARAMS_LEN {
-            return Err("dimension mismatch".to_owned());
+            return Err(Box::new(KernelError::DimensionMismatch));
         }
         self.params
             .par_iter_mut()
@@ -38,9 +40,9 @@ impl Kernel<Vec<f64>> for RBF {
         Ok(())
     }
 
-    fn value(&self, x: &Vec<f64>, x_prime: &Vec<f64>) -> Result<f64, String> {
+    fn value(&self, x: &Vec<f64>, x_prime: &Vec<f64>) -> Result<f64, Box<dyn Error>> {
         if x.len() != x_prime.len() {
-            return Err("dimension mismatch".to_owned());
+            return Err(Box::new(KernelError::DimensionMismatch));
         }
 
         let norm_pow: f64 = x
@@ -56,9 +58,9 @@ impl Kernel<Vec<f64>> for RBF {
         &self,
         x: &Vec<f64>,
         x_prime: &Vec<f64>,
-    ) -> Result<Box<dyn Fn(&[f64]) -> Result<Vec<f64>, String>>, String> {
+    ) -> Result<Box<dyn Fn(&[f64]) -> Result<Vec<f64>, Box<dyn Error>>>, Box<dyn Error>> {
         if x.len() != x_prime.len() {
-            return Err("dimension mismatch".to_owned());
+            return Err(Box::new(KernelError::DimensionMismatch));
         }
 
         let norm_pow: f64 = x
@@ -69,7 +71,7 @@ impl Kernel<Vec<f64>> for RBF {
 
         Ok(Box::new(move |params: &[f64]| {
             if params.len() != PARAMS_LEN {
-                return Err("dimension mismatch".to_owned());
+                return Err(Box::new(KernelError::DimensionMismatch));
             }
             let mut grad = vec![f64::default(); PARAMS_LEN];
 
