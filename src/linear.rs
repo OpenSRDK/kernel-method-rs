@@ -7,7 +7,7 @@ pub fn linear() -> Kernel<[f64]> {
         vec![],
         Box::new(|x: &[f64], x_prime: &[f64], with_grad: bool, _: &[f64]| {
             if x.len() != x_prime.len() {
-                return Err(Box::new(KernelError::InvalidArgument));
+                return Err(KernelError::InvalidArgument.into());
             }
 
             let func = x

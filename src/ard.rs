@@ -27,7 +27,7 @@ pub fn ard(params: [f64; PARAMS_LEN], data_len: usize) -> Kernel<[f64]> {
         Box::new(
             move |x: &[f64], x_prime: &[f64], with_grad: bool, params: &[f64]| {
                 if x.len() != data_len || x_prime.len() != data_len {
-                    return Err(Box::new(KernelError::InvalidArgument));
+                    return Err(KernelError::InvalidArgument.into());
                 }
 
                 let func = params[0] * (-weighted_norm_pow(x, x_prime, &params)).exp()

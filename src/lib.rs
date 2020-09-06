@@ -54,7 +54,7 @@ where
 
     pub fn set_params(&mut self, params: &[f64]) -> Result<(), Box<dyn Error>> {
         if self.params.len() != params.len() {
-            return Err(Box::new(KernelError::ParametersLengthMismatch));
+            return Err(KernelError::ParametersLengthMismatch.into());
         }
         self.params.clone_from_slice(params);
 
@@ -76,7 +76,7 @@ where
                 None => &self.params,
                 Some(v) => {
                     if self.params.len() != v.len() {
-                        return Err(Box::new(KernelError::ParametersLengthMismatch));
+                        return Err(KernelError::ParametersLengthMismatch.into());
                     }
                     v
                 }
