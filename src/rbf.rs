@@ -2,7 +2,7 @@ use super::Kernel;
 use crate::KernelError;
 use rayon::prelude::*;
 
-const PARAMS_LEN: usize = 2;
+const PARAMS_LEN: usize = 1;
 
 fn norm_pow(x: &[f64], x_prime: &[f64]) -> f64 {
     x.par_iter()
@@ -11,9 +11,9 @@ fn norm_pow(x: &[f64], x_prime: &[f64]) -> f64 {
         .sum()
 }
 
-pub fn rbf(params: [f64; PARAMS_LEN]) -> Kernel<[f64]> {
+pub fn rbf() -> Kernel<[f64]> {
     Kernel::<[f64]>::new(
-        params.to_vec(),
+        vec![1000.0; PARAMS_LEN],
         Box::new(
             |x: &[f64], x_prime: &[f64], with_grad: bool, params: &[f64]| {
                 if x.len() != x_prime.len() {
@@ -22,16 +22,14 @@ pub fn rbf(params: [f64; PARAMS_LEN]) -> Kernel<[f64]> {
 
                 let norm_pow = norm_pow(x, x_prime);
 
-                let func = params[0] * (-norm_pow / params[1]).exp();
+                let func = (-norm_pow / params[0]).exp();
 
                 let grad = if !with_grad {
                     None
                 } else {
                     let mut grad = vec![f64::default(); PARAMS_LEN];
 
-                    grad[0] = (-norm_pow / params[1]).exp();
-                    grad[1] =
-                        params[0] * (-norm_pow / params[1]).exp() * (norm_pow / params[1].powi(2));
+                    grad[0] = (-norm_pow / params[0]).exp() * (norm_pow / params[0].powi(2));
 
                     Some(grad)
                 };
@@ -40,4 +38,20 @@ pub fn rbf(params: [f64; PARAMS_LEN]) -> Kernel<[f64]> {
             },
         ),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+    #[test]
+    fn it_works() {
+        let kernel = rbf();
+
+        let (func, grad) = kernel
+            .func(&vec![1.0, 2.0, 3.0], &vec![10.0, 20.0, 30.0], true, None)
+            .unwrap();
+
+        println!("{}", func);
+        println!("{:#?}", grad);
+    }
 }

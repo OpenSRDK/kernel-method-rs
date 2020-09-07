@@ -48,17 +48,17 @@ where
         Self { params, func }
     }
 
-    pub fn get_params(&self) -> &[f64] {
+    pub fn params(&self) -> &[f64] {
         &self.params
     }
 
-    pub fn set_params(&mut self, params: &[f64]) -> Result<(), Box<dyn Error>> {
+    pub fn with_params(mut self, params: &[f64]) -> Result<Self, Box<dyn Error>> {
         if self.params.len() != params.len() {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
         self.params.clone_from_slice(params);
 
-        Ok(())
+        Ok(self)
     }
 
     pub fn func(
@@ -100,7 +100,7 @@ mod tests {
     use crate::*;
     #[test]
     fn it_works() {
-        let kernel = bias([1.0]) + bias([1.0]) * linear() + rbf([1.0, 1.0]) + periodic([1.0, 1.0]);
+        let kernel = bias() + bias() * linear() + bias() * rbf() + bias() * periodic();
         let (func, grad) = kernel
             .func(&vec![1.0, 2.0, 3.0], &vec![10.0, 20.0, 30.0], true, None)
             .unwrap();

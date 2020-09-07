@@ -12,9 +12,9 @@ fn norm(x: &[f64], x_prime: &[f64]) -> f64 {
         .sqrt()
 }
 
-pub fn periodic(params: [f64; PARAMS_LEN]) -> Kernel<[f64]> {
+pub fn periodic() -> Kernel<[f64]> {
     Kernel::<[f64]>::new(
-        params.to_vec(),
+        vec![1.0; PARAMS_LEN],
         Box::new(
             |x: &[f64], x_prime: &[f64], with_grad: bool, params: &[f64]| {
                 if x.len() != x_prime.len() {
