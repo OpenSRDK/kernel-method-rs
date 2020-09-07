@@ -52,13 +52,8 @@ where
         &self.params
     }
 
-    pub fn with_params(mut self, params: &[f64]) -> Result<Self, Box<dyn Error>> {
-        if self.params.len() != params.len() {
-            return Err(KernelError::ParametersLengthMismatch.into());
-        }
-        self.params.clone_from_slice(params);
-
-        Ok(self)
+    pub fn params_mut(&mut self) -> &mut [f64] {
+        &mut self.params
     }
 
     pub fn func(
