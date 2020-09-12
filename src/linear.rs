@@ -1,24 +1,62 @@
 use super::Kernel;
-use crate::KernelError;
+use crate::{KernelAdd, KernelError, KernelMul};
 use rayon::prelude::*;
+use std::{error::Error, ops::Add, ops::Mul};
 
-pub fn linear() -> Kernel<[f64]> {
-    Kernel::<[f64]>::new(
-        vec![],
-        Box::new(|x: &[f64], x_prime: &[f64], with_grad: bool, _: &[f64]| {
-            if x.len() != x_prime.len() {
-                return Err(KernelError::InvalidArgument.into());
-            }
+const PARAMS_LEN: usize = 0;
 
-            let func = x
-                .par_iter()
-                .zip(x_prime.par_iter())
-                .map(|(x_i, x_prime_i)| x_i * x_prime_i)
-                .sum();
+#[derive(Clone, Debug)]
+pub struct Linear;
 
-            let grad = if !with_grad { None } else { Some(vec![]) };
+impl Kernel<Vec<f64>> for Linear {
+    fn params_len(&self) -> usize {
+        PARAMS_LEN
+    }
 
-            Ok((func, grad))
-        }),
-    )
+    fn value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+        _: bool,
+    ) -> Result<(f64, Vec<f64>), Box<dyn Error>> {
+        if params.len() != PARAMS_LEN {
+            return Err(KernelError::ParametersLengthMismatch.into());
+        }
+        if x.len() != xprime.len() {
+            return Err(KernelError::InvalidArgument.into());
+        }
+
+        let fx = x
+            .par_iter()
+            .zip(xprime.par_iter())
+            .map(|(x_i, xprime_i)| x_i * xprime_i)
+            .sum();
+
+        let gfx = vec![];
+
+        Ok((fx, gfx))
+    }
+}
+
+impl<R> Add<R> for Linear
+where
+    R: Kernel<Vec<f64>>,
+{
+    type Output = KernelAdd<Self, R, Vec<f64>>;
+
+    fn add(self, rhs: R) -> Self::Output {
+        Self::Output::new(self, rhs)
+    }
+}
+
+impl<R> Mul<R> for Linear
+where
+    R: Kernel<Vec<f64>>,
+{
+    type Output = KernelMul<Self, R, Vec<f64>>;
+
+    fn mul(self, rhs: R) -> Self::Output {
+        Self::Output::new(self, rhs)
+    }
 }

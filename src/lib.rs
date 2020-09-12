@@ -1,93 +1,49 @@
 extern crate rayon;
 extern crate thiserror;
 
-pub use ard::ard;
-pub use bias::bias;
-pub use exponential::exponential;
-pub use linear::linear;
-pub use periodic::periodic;
-pub use rbf::rbf;
+pub use add::*;
+pub use ard::*;
+pub use bias::*;
+pub use exponential::*;
+pub use linear::*;
+pub use mul::*;
+pub use periodic::*;
+pub use rbf::*;
 use std::error::Error;
 use std::fmt::Debug;
 
+pub mod add;
 pub mod ard;
 pub mod bias;
 pub mod exponential;
 pub mod linear;
-pub mod ops;
+pub mod mul;
 pub mod periodic;
 pub mod rbf;
 
-pub type Func<T> =
-    Box<dyn Fn(&T, &T, bool, &[f64]) -> Result<(f64, Option<Vec<f64>>), Box<dyn Error>>>;
-pub struct Kernel<T>
+pub trait Kernel<T>: Clone + Debug
 where
-    T: ?Sized,
+    T: Clone + Debug,
 {
-    params: Vec<f64>,
-    func: Func<T>,
-}
+    fn params_len(&self) -> usize;
 
-impl<T> Debug for Kernel<T>
-where
-    T: ?Sized,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:#?}", self.params)
-    }
-}
-
-unsafe impl<T> Send for Kernel<T> where T: ?Sized {}
-unsafe impl<T> Sync for Kernel<T> where T: ?Sized {}
-
-impl<T> Kernel<T>
-where
-    T: ?Sized,
-{
-    pub fn new(params: Vec<f64>, func: Func<T>) -> Self {
-        Self { params, func }
-    }
-
-    pub fn params(&self) -> &[f64] {
-        &self.params
-    }
-
-    pub fn params_mut(&mut self) -> &mut [f64] {
-        &mut self.params
-    }
-
-    pub fn func(
+    fn value(
         &self,
+        params: &[f64],
         x: &T,
-        x_prime: &T,
+        xprime: &T,
         with_grad: bool,
-        rewrite_params: Option<&[f64]>,
-    ) -> Result<(f64, Option<Vec<f64>>), Box<dyn Error>> {
-        (self.func)(
-            x,
-            x_prime,
-            with_grad,
-            match rewrite_params {
-                None => &self.params,
-                Some(v) => {
-                    if self.params.len() != v.len() {
-                        return Err(KernelError::ParametersLengthMismatch.into());
-                    }
-                    v
-                }
-            },
-        )
-    }
+    ) -> Result<(f64, Vec<f64>), Box<dyn Error>>;
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum KernelError {
-    #[error("invalid argument")]
-    InvalidArgument,
-    #[error("invalid parameter")]
-    InvalidParameter,
     #[error("parameters length mismatch")]
     ParametersLengthMismatch,
+    #[error("invalid parameter")]
+    InvalidParameter,
+    #[error("invalid argument")]
+    InvalidArgument,
 }
 
 #[cfg(test)]
@@ -95,9 +51,14 @@ mod tests {
     use crate::*;
     #[test]
     fn it_works() {
-        let kernel = bias() + bias() * linear() + bias() * rbf() + bias() * periodic();
+        let kernel = RBF + Bias * Linear + Bias * Periodic + Bias * ARD(3);
         let (func, grad) = kernel
-            .func(&vec![1.0, 2.0, 3.0], &vec![10.0, 20.0, 30.0], true, None)
+            .value(
+                &vec![1.0; kernel.params_len()],
+                &vec![1.0, 2.0, 3.0],
+                &vec![10.0, 20.0, 30.0],
+                true,
+            )
             .unwrap();
 
         println!("{}", func);
