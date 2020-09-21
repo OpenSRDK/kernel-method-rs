@@ -6,24 +6,24 @@ pub type ValueFn =
     dyn Fn(&[f64], &Vec<f64>, &Vec<f64>, bool) -> Result<(f64, Vec<f64>), Box<dyn Error>>;
 
 #[derive(Clone)]
-pub struct Instant<'a> {
+pub struct InstantKernel<'a> {
     params_len: usize,
     value: &'a ValueFn,
 }
 
-impl<'a> Instant<'a> {
+impl<'a> InstantKernel<'a> {
     pub fn new(params_len: usize, value: &'a ValueFn) -> Self {
         Self { params_len, value }
     }
 }
 
-impl<'a> Debug for Instant<'a> {
+impl<'a> Debug for InstantKernel<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Instant {{ params_len: {} }}", self.params_len)
     }
 }
 
-impl<'a> Kernel<Vec<f64>> for Instant<'a> {
+impl<'a> Kernel<Vec<f64>> for InstantKernel<'a> {
     fn params_len(&self) -> usize {
         self.params_len
     }
@@ -39,7 +39,7 @@ impl<'a> Kernel<Vec<f64>> for Instant<'a> {
     }
 }
 
-impl<'a, R> Add<R> for Instant<'a>
+impl<'a, R> Add<R> for InstantKernel<'a>
 where
     R: Kernel<Vec<f64>>,
 {
@@ -50,7 +50,7 @@ where
     }
 }
 
-impl<'a, R> Mul<R> for Instant<'a>
+impl<'a, R> Mul<R> for InstantKernel<'a>
 where
     R: Kernel<Vec<f64>>,
 {
