@@ -36,6 +36,10 @@ where
     pub fn new(kernel: K) -> Self {
         Self { kernel }
     }
+
+    pub fn kernel_ref(&self) -> &K {
+        &self.kernel
+    }
 }
 
 impl<T, K> Kernel<T> for Convolutional<K>
