@@ -1,7 +1,7 @@
 use crate::{Kernel, KernelError};
 use std::{error::Error, fmt::Debug};
 
-pub trait Convolutable: Clone + Debug {
+pub trait Convolutable: Clone + Debug + Sync + Send {
     fn parts_len(&self) -> usize;
     fn part(&self, index: usize) -> &Vec<f64>;
     fn data_len(&self) -> usize;
@@ -27,6 +27,15 @@ where
     K: Kernel<Vec<f64>>,
 {
     kernel: K,
+}
+
+impl<K> Convolutional<K>
+where
+    K: Kernel<Vec<f64>>,
+{
+    pub fn new(kernel: K) -> Self {
+        Self { kernel }
+    }
 }
 
 impl<T, K> Kernel<T> for Convolutional<K>
