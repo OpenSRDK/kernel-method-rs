@@ -1,7 +1,7 @@
 use super::Kernel;
 use crate::{KernelAdd, KernelError, KernelMul};
 use rayon::prelude::*;
-use std::{error::Error, ops::Add, ops::Mul};
+use std::{ops::Add, ops::Mul};
 
 const PARAMS_LEN: usize = 0;
 
@@ -13,13 +13,7 @@ impl Kernel<Vec<f64>> for Linear {
     PARAMS_LEN
   }
 
-  fn value(
-    &self,
-    params: &[f64],
-    x: &Vec<f64>,
-    xprime: &Vec<f64>,
-    _: bool,
-  ) -> Result<(f64, Vec<f64>), Box<dyn Error>> {
+  fn value(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
     if params.len() != PARAMS_LEN {
       return Err(KernelError::ParametersLengthMismatch.into());
     }
@@ -32,6 +26,17 @@ impl Kernel<Vec<f64>> for Linear {
       .zip(xprime.par_iter())
       .map(|(x_i, xprime_i)| x_i * xprime_i)
       .sum();
+
+    Ok(fx)
+  }
+
+  fn value_with_grad(
+    &self,
+    params: &[f64],
+    x: &Vec<f64>,
+    xprime: &Vec<f64>,
+  ) -> Result<(f64, Vec<f64>), KernelError> {
+    let fx = self.value(params, x, xprime)?;
 
     let gfx = vec![];
 

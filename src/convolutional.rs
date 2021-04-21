@@ -1,7 +1,9 @@
+use crate::Value;
 use crate::{Kernel, KernelError};
-use std::{error::Error, fmt::Debug};
+use rayon::prelude::*;
+use std::fmt::Debug;
 
-pub trait Convolutable: Clone + Debug + Sync + Send {
+pub trait Convolutable: Value {
   fn parts_len(&self) -> usize;
   fn part(&self, index: usize) -> &Vec<f64>;
   fn data_len(&self) -> usize;
@@ -41,6 +43,7 @@ where
     &self.kernel
   }
 }
+
 impl<T, K> Kernel<T> for Convolutional<K>
 where
   T: Convolutable,
@@ -50,13 +53,29 @@ where
     self.kernel.params_len()
   }
 
-  fn value(
+  fn value(&self, params: &[f64], x: &T, xprime: &T) -> Result<f64, KernelError> {
+    if params.len() != self.kernel.params_len() {
+      return Err(KernelError::ParametersLengthMismatch.into());
+    }
+    let p = x.parts_len();
+    if p != xprime.parts_len() {
+      return Err(KernelError::InvalidArgument.into());
+    }
+
+    let fx = (0..p)
+      .into_par_iter()
+      .map(|pi| self.kernel.value(params, x.part(pi), xprime.part(pi)))
+      .sum::<Result<f64, KernelError>>()?;
+
+    Ok(fx)
+  }
+
+  fn value_with_grad(
     &self,
     params: &[f64],
     x: &T,
     xprime: &T,
-    with_grad: bool,
-  ) -> Result<(f64, Vec<f64>), Box<dyn Error>> {
+  ) -> Result<(f64, Vec<f64>), KernelError> {
     if params.len() != self.kernel.params_len() {
       return Err(KernelError::ParametersLengthMismatch.into());
     }
@@ -70,9 +89,9 @@ where
       .map(|pi| {
         self
           .kernel
-          .value(params, x.part(pi), xprime.part(pi), with_grad)
+          .value_with_grad(params, x.part(pi), xprime.part(pi))
       })
-      .try_fold::<(f64, Vec<f64>), _, Result<(f64, Vec<f64>), Box<dyn Error>>>(
+      .try_fold::<(f64, Vec<f64>), _, Result<(f64, Vec<f64>), KernelError>>(
         (0.0, vec![]),
         |a, b| {
           let b = b?;

@@ -1,32 +1,15 @@
 use super::Kernel;
 use crate::{KernelAdd, KernelError, KernelMul};
 use rayon::prelude::*;
-use std::{error::Error, ops::Add, ops::Mul};
+use std::{ops::Add, ops::Mul};
 
 const PARAMS_LEN: usize = 2;
-
-fn norm_pow(x: &Vec<f64>, xprime: &Vec<f64>) -> f64 {
-  x.par_iter()
-    .zip(xprime.par_iter())
-    .map(|(x_i, xprime_i)| (x_i - xprime_i).powi(2))
-    .sum()
-}
 
 #[derive(Clone, Debug)]
 pub struct RBF;
 
-impl Kernel<Vec<f64>> for RBF {
-  fn params_len(&self) -> usize {
-    PARAMS_LEN
-  }
-
-  fn value(
-    &self,
-    params: &[f64],
-    x: &Vec<f64>,
-    xprime: &Vec<f64>,
-    with_grad: bool,
-  ) -> Result<(f64, Vec<f64>), Box<dyn Error>> {
+impl RBF {
+  fn norm_pow(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
     if params.len() != PARAMS_LEN {
       return Err(KernelError::ParametersLengthMismatch.into());
     }
@@ -34,20 +17,43 @@ impl Kernel<Vec<f64>> for RBF {
       return Err(KernelError::InvalidArgument.into());
     }
 
-    let norm_pow = norm_pow(x, xprime);
+    let norm_pow = x
+      .par_iter()
+      .zip(xprime.par_iter())
+      .map(|(x_i, xprime_i)| (x_i - xprime_i).powi(2))
+      .sum();
+
+    Ok(norm_pow)
+  }
+}
+
+impl Kernel<Vec<f64>> for RBF {
+  fn params_len(&self) -> usize {
+    PARAMS_LEN
+  }
+
+  fn value(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
+    let norm_pow = self.norm_pow(params, x, xprime)?;
 
     let fx = params[0] * (-norm_pow / params[1]).exp();
 
-    let gfx = if !with_grad {
-      vec![]
-    } else {
-      let mut gfx = vec![f64::default(); PARAMS_LEN];
+    Ok(fx)
+  }
 
-      gfx[0] = (-norm_pow / params[1]).exp();
-      gfx[1] = params[0] * (-norm_pow / params[1]).exp() * (norm_pow / params[1].powi(2));
+  fn value_with_grad(
+    &self,
+    params: &[f64],
+    x: &Vec<f64>,
+    xprime: &Vec<f64>,
+  ) -> Result<(f64, Vec<f64>), KernelError> {
+    let norm_pow = self.norm_pow(params, x, xprime)?;
 
-      gfx
-    };
+    let fx = params[0] * (-norm_pow / params[1]).exp();
+
+    let gfx = vec![
+      (-norm_pow / params[1]).exp(),
+      params[0] * (-norm_pow / params[1]).exp() * (norm_pow / params[1].powi(2)),
+    ];
 
     Ok((fx, gfx))
   }
@@ -83,12 +89,7 @@ mod tests {
     let kernel = RBF;
 
     let (func, grad) = kernel
-      .value(
-        &[1.0, 1.0],
-        &vec![1.0, 2.0, 3.0],
-        &vec![3.0, 2.0, 1.0],
-        true,
-      )
+      .value_with_grad(&[1.0, 1.0], &vec![1.0, 2.0, 3.0], &vec![3.0, 2.0, 1.0])
       .unwrap();
 
     println!("{}", func);

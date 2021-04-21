@@ -11,7 +11,6 @@ pub use linear::*;
 pub use mul::*;
 pub use periodic::*;
 pub use rbf::*;
-use std::error::Error;
 use std::fmt::Debug;
 
 pub mod add;
@@ -25,19 +24,23 @@ pub mod mul;
 pub mod periodic;
 pub mod rbf;
 
-pub trait Kernel<T>: Clone + Debug
+pub trait Value: Clone + Debug + PartialEq + Send + Sync {}
+impl<T> Value for T where T: Clone + Debug + PartialEq + Send + Sync {}
+
+pub trait Kernel<T>: Clone + Debug + Send + Sync
 where
-  T: Clone + Debug,
+  T: Value,
 {
   fn params_len(&self) -> usize;
 
-  fn value(
+  fn value(&self, params: &[f64], x: &T, xprime: &T) -> Result<f64, KernelError>;
+
+  fn value_with_grad(
     &self,
     params: &[f64],
     x: &T,
     xprime: &T,
-    with_grad: bool,
-  ) -> Result<(f64, Vec<f64>), Box<dyn Error>>;
+  ) -> Result<(f64, Vec<f64>), KernelError>;
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -57,11 +60,10 @@ mod tests {
   fn it_works() {
     let kernel = RBF + Bias * Linear + Bias * Periodic + Bias * ARD(3);
     let (func, grad) = kernel
-      .value(
+      .value_with_grad(
         &vec![1.0; kernel.params_len()],
         &vec![1.0, 2.0, 3.0],
         &vec![10.0, 20.0, 30.0],
-        true,
       )
       .unwrap();
 
