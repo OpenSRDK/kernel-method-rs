@@ -4,5 +4,5 @@
 
 ```toml
 [dependencies]
-opensrdk-kernel-method = "0.1.4"
+opensrdk-kernel-method = "0.1.6"
 ```
