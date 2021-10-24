@@ -11,6 +11,8 @@ pub use linear::*;
 pub use mul::*;
 pub use periodic::*;
 pub use rbf::*;
+pub use spectral_mixture::*;
+
 use std::fmt::Debug;
 
 pub mod add;
@@ -23,6 +25,7 @@ pub mod linear;
 pub mod mul;
 pub mod periodic;
 pub mod rbf;
+pub mod spectral_mixture;
 
 pub trait Value: Clone + Debug + Send + Sync {}
 impl<T> Value for T where T: Clone + Debug + Send + Sync {}
