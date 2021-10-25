@@ -33,8 +33,8 @@ impl<'a> Kernel<Vec<f64>> for DeepNeuralNetwork<'a> {
         let params = &params[2..];
 
         for (i, &layer) in self.layers.iter().enumerate() {
-            let sigma_b = params[i * 2];
-            let sigma_w = params[i * 2 + 1];
+            let sigma_b = params[(i + 1) * 2];
+            let sigma_w = params[(i + 1) * 2 + 1];
             let f = layer.f(previous_layer_kernel);
             let fxx = layer.f((
                 previous_layer_kernel.1,
