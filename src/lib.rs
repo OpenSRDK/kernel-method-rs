@@ -9,8 +9,10 @@ pub use exponential::*;
 pub use instant::*;
 pub use linear::*;
 pub use mul::*;
+pub use neural_network::{deep_neural_network::*, relu::*};
 pub use periodic::*;
 pub use rbf::*;
+
 use std::fmt::Debug;
 
 pub mod add;
@@ -21,6 +23,7 @@ pub mod exponential;
 pub mod instant;
 pub mod linear;
 pub mod mul;
+pub mod neural_network;
 pub mod periodic;
 pub mod rbf;
 
