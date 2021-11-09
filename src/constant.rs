@@ -1,37 +1,34 @@
 use super::PositiveDefiniteKernel;
+use crate::Value;
 use crate::{KernelAdd, KernelError, KernelMul};
-use rayon::prelude::*;
+use std::fmt::Debug;
 use std::{ops::Add, ops::Mul};
 
-const PARAMS_LEN: usize = 0;
+const PARAMS_LEN: usize = 1;
 
 #[derive(Clone, Debug)]
-pub struct Linear;
+pub struct Constant;
 
-impl PositiveDefiniteKernel<Vec<f64>> for Linear {
+impl<T> PositiveDefiniteKernel<T> for Constant
+where
+    T: Value,
+{
     fn params_len(&self) -> usize {
         PARAMS_LEN
     }
 
-    fn value(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
+    fn value(&self, params: &[f64], _: &T, _: &T) -> Result<f64, KernelError> {
         if params.len() != PARAMS_LEN {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
-        if x.len() != xprime.len() {
-            return Err(KernelError::InvalidArgument.into());
-        }
 
-        let fx = x
-            .par_iter()
-            .zip(xprime.par_iter())
-            .map(|(x_i, xprime_i)| x_i * xprime_i)
-            .sum();
+        let fx = params[0];
 
         Ok(fx)
     }
 }
 
-impl<R> Add<R> for Linear
+impl<R> Add<R> for Constant
 where
     R: PositiveDefiniteKernel<Vec<f64>>,
 {
@@ -42,7 +39,7 @@ where
     }
 }
 
-impl<R> Mul<R> for Linear
+impl<R> Mul<R> for Constant
 where
     R: PositiveDefiniteKernel<Vec<f64>>,
 {
@@ -58,12 +55,12 @@ mod tests {
     use crate::*;
     #[test]
     fn it_works() {
-        let kernel = Linear;
+        let kernel = Constant;
 
         let test_value = kernel
-            .value(&[], &vec![1.0, 2.0, 3.0], &vec![3.0, 2.0, 1.0])
+            .value(&[1.0], &vec![1.0, 2.0, 3.0], &vec![3.0, 2.0, 1.0])
             .unwrap();
 
-        assert_eq!(test_value, 10.0);
+        assert_eq!(test_value, 1.0);
     }
 }

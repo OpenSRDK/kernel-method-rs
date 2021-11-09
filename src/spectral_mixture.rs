@@ -1,4 +1,4 @@
-use super::Kernel;
+use super::PositiveDefiniteKernel;
 use crate::{KernelAdd, KernelError, KernelMul};
 use rayon::prelude::*;
 use std::{f64::consts::PI, ops::Add, ops::Mul};
@@ -16,7 +16,7 @@ impl SpectralMixture {
     }
 }
 
-impl Kernel<Vec<f64>> for SpectralMixture {
+impl PositiveDefiniteKernel<Vec<f64>> for SpectralMixture {
     fn params_len(&self) -> usize {
         self.q + self.p * self.q + self.p * self.q
     }
@@ -51,20 +51,11 @@ impl Kernel<Vec<f64>> for SpectralMixture {
 
         Ok(fx)
     }
-
-    fn value_with_grad(
-        &self,
-        params: &[f64],
-        x: &Vec<f64>,
-        xprime: &Vec<f64>,
-    ) -> Result<(f64, Vec<f64>), KernelError> {
-        todo!("{:?}{:?}{:?}", params, x, xprime)
-    }
 }
 
 impl<R> Add<R> for SpectralMixture
 where
-    R: Kernel<Vec<f64>>,
+    R: PositiveDefiniteKernel<Vec<f64>>,
 {
     type Output = KernelAdd<Self, R, Vec<f64>>;
 
@@ -75,11 +66,27 @@ where
 
 impl<R> Mul<R> for SpectralMixture
 where
-    R: Kernel<Vec<f64>>,
+    R: PositiveDefiniteKernel<Vec<f64>>,
 {
     type Output = KernelMul<Self, R, Vec<f64>>;
 
     fn mul(self, rhs: R) -> Self::Output {
         Self::Output::new(self, rhs)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+    #[test]
+    fn it_works() {
+        let kernel = SpectralMixture::new(1, 2);
+
+        let test_value = kernel.value(&[1.0, 1.0], &vec![0.0, 0.0, 0.0], &vec![0.0, 0.0, 0.0]);
+
+        match test_value {
+            Err(KernelError::ParametersLengthMismatch) => (),
+            _ => panic!(),
+        };
     }
 }
