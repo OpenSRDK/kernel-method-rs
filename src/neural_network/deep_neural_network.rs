@@ -1,5 +1,5 @@
 use super::ActivationFunction;
-use crate::{Bias, Kernel, KernelAdd, KernelError, KernelMul, Linear};
+use crate::{Constant, KernelAdd, KernelError, KernelMul, Linear, PositiveDefiniteKernel};
 use std::{
     fmt::Debug,
     ops::{Add, Mul},
@@ -11,7 +11,12 @@ pub struct DeepNeuralNetwork<'a> {
     layers: Vec<&'a dyn ActivationFunction>,
 }
 
-impl<'a> Kernel<Vec<f64>> for DeepNeuralNetwork<'a> {
+impl<'a> DeepNeuralNetwork<'a> {
+    pub fn new(layers: Vec<&'a dyn ActivationFunction>) -> Self {
+        Self { layers }
+    }
+}
+impl<'a> PositiveDefiniteKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
     fn params_len(&self) -> usize {
         2 * (1 + self.layers.len())
     }
@@ -24,7 +29,7 @@ impl<'a> Kernel<Vec<f64>> for DeepNeuralNetwork<'a> {
             return Err(KernelError::InvalidArgument.into());
         }
 
-        let layer0 = Bias + Bias * Linear;
+        let layer0 = Constant + Constant * Linear;
         let mut previous_layer_kernel = (
             layer0.value(&params[0..2], x, xprime)?,
             layer0.value(&params[0..2], x, x)?,
@@ -56,20 +61,11 @@ impl<'a> Kernel<Vec<f64>> for DeepNeuralNetwork<'a> {
 
         Ok(previous_layer_kernel.0)
     }
-
-    fn value_with_grad(
-        &self,
-        params: &[f64],
-        x: &Vec<f64>,
-        xprime: &Vec<f64>,
-    ) -> Result<(f64, Vec<f64>), KernelError> {
-        todo!("{:?}{:?}{:?}", params, x, xprime)
-    }
 }
 
 impl<'a, R> Add<R> for DeepNeuralNetwork<'a>
 where
-    R: Kernel<Vec<f64>>,
+    R: PositiveDefiniteKernel<Vec<f64>>,
 {
     type Output = KernelAdd<Self, R, Vec<f64>>;
     fn add(self, rhs: R) -> Self::Output {
@@ -79,11 +75,33 @@ where
 
 impl<'a, R> Mul<R> for DeepNeuralNetwork<'a>
 where
-    R: Kernel<Vec<f64>>,
+    R: PositiveDefiniteKernel<Vec<f64>>,
 {
     type Output = KernelMul<Self, R, Vec<f64>>;
 
     fn mul(self, rhs: R) -> Self::Output {
         Self::Output::new(self, rhs)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[test]
+    fn it_works() {
+        let activfunc = ReLU;
+        let kernel = DeepNeuralNetwork::new(vec![&activfunc]);
+
+        let test_value = kernel.value(
+            &[1.0, 1.0, 3.0, 4.0, 6.0],
+            &vec![0.0, 0.0, 0.0],
+            &vec![0.0, 0.0, 0.0],
+        );
+
+        match test_value {
+            Err(KernelError::ParametersLengthMismatch) => (),
+            _ => panic!(),
+        };
     }
 }
