@@ -50,7 +50,7 @@ where
     }
 
     fn value(&self, params: &[f64], x: &T, xprime: &T) -> Result<f64, KernelError> {
-        self.value_function(params, x, xprime)
+        (self.value_function)(params, x, xprime)
     }
 }
 
@@ -85,7 +85,7 @@ mod tests {
     use crate::*;
     #[test]
     fn it_works() {
-        let kernel = RBF + InstantKernel::new(0, &|_, _, _| Ok(0.0));
+        let kernel = RBF + InstantKernel::new(0, |_, _, _| Ok(0.0));
 
         //let (func, grad) = kernel
         //    .value_with_grad(&[1.0, 1.0], &vec![1.0, 2.0, 3.0], &vec![3.0, 2.0, 1.0])
