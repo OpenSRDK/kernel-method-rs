@@ -86,6 +86,6 @@ mod tests {
             .value(&[1.0, 1.0], &vec![1.0, 0.0, 0.0], &vec![0.0, 0.0, 0.0])
             .unwrap();
 
-            assert_eq!(test_value, (-1f64).exp());
+        assert_eq!(test_value, (-1f64).exp());
     }
 }

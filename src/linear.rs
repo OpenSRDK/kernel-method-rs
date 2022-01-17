@@ -1,5 +1,5 @@
 use super::PositiveDefiniteKernel;
-use crate::{KernelAdd, KernelError, KernelMul};
+use crate::{KernelAdd, KernelError, KernelMul, ValueDifferentiable};
 use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
 
@@ -50,6 +50,18 @@ where
 
     fn mul(self, rhs: R) -> Self::Output {
         Self::Output::new(self, rhs)
+    }
+}
+
+impl ValueDifferentiable<Vec<f64>> for Linear {
+    fn ln_diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff = 2.0 * x.col_mat();
+        Ok(diff)
     }
 }
 
