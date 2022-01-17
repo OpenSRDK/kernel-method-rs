@@ -1,4 +1,5 @@
 use crate::{KernelError, PositiveDefiniteKernel, Value};
+
 pub trait ParamsDifferentiable<T>: PositiveDefiniteKernel<T>
 where
     T: Value,
