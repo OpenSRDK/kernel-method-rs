@@ -14,3 +14,4 @@ categories = ["mathematics", "science"]
 [dependencies]
 rayon = "1.5.1"
 thiserror = "1.0.28"
+opensrdk-linear-algebra = "0.8.2"
