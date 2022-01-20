@@ -1,5 +1,6 @@
 use super::PositiveDefiniteKernel;
-use crate::{KernelAdd, KernelError, KernelMul};
+use crate::{KernelAdd, KernelError, KernelMul, ValueDifferentiableKernel, ParamsDifferentiableKernel};
+use opensrdk_linear_algebra::Vector;
 use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
 
@@ -54,6 +55,33 @@ where
     fn mul(self, rhs: R) -> Self::Output {
         Self::Output::new(self, rhs)
     }
+}
+
+impl ValueDifferentiableKernel<Vec<f64>> for ARD {
+  fn ln_diff_value(
+      &self,
+      params: &[f64],
+      x: &Vec<f64>,
+      xprime: &Vec<f64>,
+  ) -> Result<(Vec<f64>, f64), KernelError> {
+      let value = &self.value(params, x, xprime).unwrap();
+      //ここは要修正
+      let diff = (-2.0 * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
+      Ok((diff, *value))
+  }
+}
+
+impl ParamsDifferentiableKernel<Vec<f64>> for ARD {
+fn ln_diff_params(
+    &self,
+    params: &[f64],
+    x: &Vec<f64>,
+    xprime: &Vec<f64>,
+) -> Result<(Vec<f64>, f64), KernelError> {
+    let diff = vec![];
+    let value = &self.value(params, x, xprime).unwrap();
+    Ok((diff, *value))
+}
 }
 
 #[cfg(test)]

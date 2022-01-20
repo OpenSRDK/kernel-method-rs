@@ -1,5 +1,5 @@
 use super::PositiveDefiniteKernel;
-use crate::Value;
+use crate::{Value, ValueDifferentiableKernel, ParamsDifferentiableKernel};
 use crate::{KernelAdd, KernelError, KernelMul};
 use std::fmt::Debug;
 use std::{ops::Add, ops::Mul};
@@ -48,6 +48,32 @@ where
     fn mul(self, rhs: R) -> Self::Output {
         Self::Output::new(self, rhs)
     }
+}
+
+impl ValueDifferentiableKernel<Vec<f64>> for Constant {
+  fn ln_diff_value(
+      &self,
+      params: &[f64],
+      x: &Vec<f64>,
+      xprime: &Vec<f64>,
+  ) -> Result<(Vec<f64>, f64), KernelError> {
+      let value = &self.value(params, x, xprime).unwrap();
+      let diff = vec![0.0; x.len()];
+      Ok((diff, *value))
+  }
+}
+
+impl ParamsDifferentiableKernel<Vec<f64>> for Constant {
+fn ln_diff_params(
+    &self,
+    params: &[f64],
+    _x: &Vec<f64>,
+    _xprime: &Vec<f64>,
+) -> Result<(Vec<f64>, f64), KernelError> {
+    let diff = vec![1.0];
+    let value = &params[0];
+    Ok((diff, *value))
+}
 }
 
 #[cfg(test)]
