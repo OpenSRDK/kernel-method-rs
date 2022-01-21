@@ -1,0 +1,1 @@
+\sum_{d=1}^D \theta_d (hoge)^2
