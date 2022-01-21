@@ -1,6 +1,6 @@
+pub extern crate opensrdk_linear_algebra;
 extern crate rayon;
 extern crate thiserror;
-pub extern crate opensrdk_linear_algebra;
 
 pub use add::*;
 pub use ard::*;
