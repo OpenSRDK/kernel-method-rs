@@ -1,6 +1,7 @@
 use super::PositiveDefiniteKernel;
-use crate::{KernelAdd, KernelError, KernelMul, ValueDifferentiableKernel, ParamsDifferentiableKernel};
-use opensrdk_linear_algebra::Vector;
+use crate::{
+    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+};
 use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
 
@@ -58,30 +59,40 @@ where
 }
 
 impl ValueDifferentiableKernel<Vec<f64>> for ARD {
-  fn ln_diff_value(
-      &self,
-      params: &[f64],
-      x: &Vec<f64>,
-      xprime: &Vec<f64>,
-  ) -> Result<(Vec<f64>, f64), KernelError> {
-      let value = &self.value(params, x, xprime).unwrap();
-      //ここは要修正
-      let diff = (-2.0 * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
-      Ok((diff, *value))
-  }
+    fn ln_diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<(Vec<f64>, f64), KernelError> {
+        let value = &self.value(params, x, xprime).unwrap();
+        //ここは要修正
+        let diff = params
+            .par_iter()
+            .zip(x.par_iter())
+            .zip(xprime.par_iter())
+            .map(|((relevance, xi), xprimei)| -2.0 * relevance * (xi - xprimei))
+            .collect::<Vec<f64>>();
+        Ok((diff, *value))
+    }
 }
 
 impl ParamsDifferentiableKernel<Vec<f64>> for ARD {
-fn ln_diff_params(
-    &self,
-    params: &[f64],
-    x: &Vec<f64>,
-    xprime: &Vec<f64>,
-) -> Result<(Vec<f64>, f64), KernelError> {
-    let diff = vec![];
-    let value = &self.value(params, x, xprime).unwrap();
-    Ok((diff, *value))
-}
+    fn ln_diff_params(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<(Vec<f64>, f64), KernelError> {
+        let diff = params
+            .par_iter()
+            .zip(x.par_iter())
+            .zip(xprime.par_iter())
+            .map(|((_relevance, xi), xprimei)| -(xi - xprimei).powi(2))
+            .collect::<Vec<f64>>();
+        let value = &self.value(params, x, xprime).unwrap();
+        Ok((diff, *value))
+    }
 }
 
 #[cfg(test)]
