@@ -66,7 +66,6 @@ impl ValueDifferentiableKernel<Vec<f64>> for ARD {
         xprime: &Vec<f64>,
     ) -> Result<(Vec<f64>, f64), KernelError> {
         let value = &self.value(params, x, xprime).unwrap();
-        //ここは要修正
         let diff = params
             .par_iter()
             .zip(x.par_iter())
