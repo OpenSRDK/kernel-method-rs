@@ -64,15 +64,14 @@ impl ValueDifferentiableKernel<Vec<f64>> for ARD {
         params: &[f64],
         x: &Vec<f64>,
         xprime: &Vec<f64>,
-    ) -> Result<(Vec<f64>, f64), KernelError> {
-        let value = &self.value(params, x, xprime).unwrap();
+    ) -> Result<Vec<f64>, KernelError> {
         let diff = params
             .par_iter()
             .zip(x.par_iter())
             .zip(xprime.par_iter())
             .map(|((relevance, xi), xprimei)| -2.0 * relevance * (xi - xprimei))
             .collect::<Vec<f64>>();
-        Ok((diff, *value))
+        Ok(diff)
     }
 }
 
@@ -82,15 +81,14 @@ impl ParamsDifferentiableKernel<Vec<f64>> for ARD {
         params: &[f64],
         x: &Vec<f64>,
         xprime: &Vec<f64>,
-    ) -> Result<(Vec<f64>, f64), KernelError> {
+    ) -> Result<Vec<f64>, KernelError> {
         let diff = params
             .par_iter()
             .zip(x.par_iter())
             .zip(xprime.par_iter())
             .map(|((_relevance, xi), xprimei)| -(xi - xprimei).powi(2))
             .collect::<Vec<f64>>();
-        let value = &self.value(params, x, xprime).unwrap();
-        Ok((diff, *value))
+        Ok(diff)
     }
 }
 

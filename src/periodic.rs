@@ -1,5 +1,7 @@
 use super::PositiveDefiniteKernel;
-use crate::{KernelAdd, KernelError, KernelMul, ValueDifferentiableKernel, ParamsDifferentiableKernel};
+use crate::{
+    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+};
 use opensrdk_linear_algebra::Vector;
 use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
@@ -66,31 +68,33 @@ where
 }
 
 impl ValueDifferentiableKernel<Vec<f64>> for Periodic {
-  fn ln_diff_value(
-      &self,
-      params: &[f64],
-      x: &Vec<f64>,
-      xprime: &Vec<f64>,
-  ) -> Result<(Vec<f64>, f64), KernelError> {
-      let value = &self.value(params, x, xprime).unwrap();
-      let diff = (-value.sin() * 2.0 / params[1] * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
-      Ok((diff, *value))
-  }
+    fn ln_diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let value = &self.value(params, x, xprime)?;
+        let diff = (-value.sin() * 2.0 / params[1]
+            * (x.clone().col_mat() - xprime.clone().col_mat()))
+        .vec();
+        Ok(diff)
+    }
 }
 
 impl ParamsDifferentiableKernel<Vec<f64>> for Periodic {
-fn ln_diff_params(
-    &self,
-    params: &[f64],
-    x: &Vec<f64>,
-    xprime: &Vec<f64>,
-) -> Result<(Vec<f64>, f64), KernelError> {
-    let value = &self.value(params, x, xprime).unwrap();
-    let diff0 = 1.0 / params[0] ;
-    let diff1 = value.sin() * 2.0 * params[1].powi(-2) * &self.norm(params, x, xprime).unwrap();
-    let diff = vec![diff0, diff1];
-    Ok((diff, *value))
-}
+    fn ln_diff_params(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let value = &self.value(params, x, xprime)?;
+        let diff0 = 1.0 / params[0];
+        let diff1 = value.sin() * 2.0 * params[1].powi(-2) * &self.norm(params, x, xprime)?;
+        let diff = vec![diff0, diff1];
+        Ok(diff)
+    }
 }
 
 #[cfg(test)]

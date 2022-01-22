@@ -1,6 +1,6 @@
 use super::PositiveDefiniteKernel;
-use crate::{Value, ValueDifferentiableKernel, ParamsDifferentiableKernel};
 use crate::{KernelAdd, KernelError, KernelMul};
+use crate::{ParamsDifferentiableKernel, Value, ValueDifferentiableKernel};
 use std::fmt::Debug;
 use std::{ops::Add, ops::Mul};
 
@@ -51,29 +51,27 @@ where
 }
 
 impl ValueDifferentiableKernel<Vec<f64>> for Constant {
-  fn ln_diff_value(
-      &self,
-      params: &[f64],
-      x: &Vec<f64>,
-      xprime: &Vec<f64>,
-  ) -> Result<(Vec<f64>, f64), KernelError> {
-      let value = &self.value(params, x, xprime).unwrap();
-      let diff = vec![0.0; x.len()];
-      Ok((diff, *value))
-  }
+    fn ln_diff_value(
+        &self,
+        _params: &[f64],
+        x: &Vec<f64>,
+        _xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff = vec![0.0; x.len()];
+        Ok(diff)
+    }
 }
 
 impl ParamsDifferentiableKernel<Vec<f64>> for Constant {
-fn ln_diff_params(
-    &self,
-    params: &[f64],
-    _x: &Vec<f64>,
-    _xprime: &Vec<f64>,
-) -> Result<(Vec<f64>, f64), KernelError> {
-    let diff = vec![1.0];
-    let value = &params[0];
-    Ok((diff, *value))
-}
+    fn ln_diff_params(
+        &self,
+        _params: &[f64],
+        _x: &Vec<f64>,
+        _xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff = vec![1.0];
+        Ok(diff)
+    }
 }
 
 #[cfg(test)]

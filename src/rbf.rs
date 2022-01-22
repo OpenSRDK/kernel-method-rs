@@ -1,5 +1,7 @@
 use super::PositiveDefiniteKernel;
-use crate::{KernelAdd, KernelError, KernelMul, ValueDifferentiableKernel, ParamsDifferentiableKernel};
+use crate::{
+    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+};
 use opensrdk_linear_algebra::Vector;
 use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
@@ -70,31 +72,29 @@ where
 }
 
 impl ValueDifferentiableKernel<Vec<f64>> for RBF {
-  fn ln_diff_value(
-      &self,
-      params: &[f64],
-      x: &Vec<f64>,
-      xprime: &Vec<f64>,
-  ) -> Result<(Vec<f64>, f64), KernelError> {
-      let value = &self.value(params, x, xprime).unwrap();
-      let diff = (-2.0 / params[1] * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
-      Ok((diff, *value))
-  }
+    fn ln_diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff = (-2.0 / params[1] * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
+        Ok(diff)
+    }
 }
 
 impl ParamsDifferentiableKernel<Vec<f64>> for RBF {
-fn ln_diff_params(
-    &self,
-    params: &[f64],
-    x: &Vec<f64>,
-    xprime: &Vec<f64>,
-) -> Result<(Vec<f64>, f64), KernelError> {
-    let diff0 = 1.0 / params[0] ;
-    let diff1 = 2.0 * params[1].powi(-2) * &self.norm_pow(params, x, xprime).unwrap();
-    let diff = vec![diff0, diff1];
-    let value = &self.value(params, x, xprime).unwrap();
-    Ok((diff, *value))
-}
+    fn ln_diff_params(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff0 = 1.0 / params[0];
+        let diff1 = 2.0 * params[1].powi(-2) * &self.norm_pow(params, x, xprime).unwrap();
+        let diff = vec![diff0, diff1];
+        Ok(diff)
+    }
 }
 
 #[cfg(test)]
