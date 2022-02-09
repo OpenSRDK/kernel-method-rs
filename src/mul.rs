@@ -1,5 +1,9 @@
+use opensrdk_linear_algebra::Vector;
+
 use crate::KernelError;
+use crate::ParamsDifferentiableKernel;
 use crate::Value;
+use crate::ValueDifferentiableKernel;
 use crate::{KernelAdd, PositiveDefiniteKernel};
 use std::marker::PhantomData;
 use std::ops::Add;
@@ -78,5 +82,53 @@ where
 
     fn mul(self, rhs: Rhs) -> Self::Output {
         Self::Output::new(self, rhs)
+    }
+}
+
+impl<L, R, T> ValueDifferentiableKernel<T> for KernelMul<L, R, T>
+where
+    L: ValueDifferentiableKernel<T>,
+    R: ValueDifferentiableKernel<T>,
+    T: Value,
+{
+    fn ln_diff_value(&self, params: &[f64], x: &T, xprime: &T) -> Result<Vec<f64>, KernelError> {
+        let diff_rhs = &self
+            .rhs
+            .ln_diff_value(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let diff_lhs = &self
+            .lhs
+            .ln_diff_value(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let diff = (diff_rhs + diff_lhs.clone()).vec();
+        Ok(diff)
+    }
+}
+
+impl<L, R, T> ParamsDifferentiableKernel<T> for KernelMul<L, R, T>
+where
+    L: ParamsDifferentiableKernel<T>,
+    R: ParamsDifferentiableKernel<T>,
+    T: Value,
+{
+    fn ln_diff_params(&self, params: &[f64], x: &T, xprime: &T) -> Result<Vec<f64>, KernelError> {
+        let diff_rhs = &self
+            .rhs
+            .ln_diff_params(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let diff_lhs = &self
+            .lhs
+            .ln_diff_params(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let diff = (diff_rhs + diff_lhs.clone()).vec();
+        Ok(diff)
     }
 }
