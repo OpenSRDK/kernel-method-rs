@@ -1,10 +1,9 @@
-use opensrdk_linear_algebra::Vector;
-
 use crate::KernelError;
 use crate::ParamsDifferentiableKernel;
 use crate::Value;
 use crate::ValueDifferentiableKernel;
 use crate::{KernelMul, PositiveDefiniteKernel};
+use opensrdk_linear_algebra::Vector;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::{ops::Add, ops::Mul};
