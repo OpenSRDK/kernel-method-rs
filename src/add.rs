@@ -1,6 +1,9 @@
 use crate::KernelError;
+use crate::ParamsDifferentiableKernel;
 use crate::Value;
+use crate::ValueDifferentiableKernel;
 use crate::{KernelMul, PositiveDefiniteKernel};
+use opensrdk_linear_algebra::Vector;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::{ops::Add, ops::Mul};
@@ -78,5 +81,61 @@ where
 
     fn mul(self, rhs: Rhs) -> Self::Output {
         Self::Output::new(self, rhs)
+    }
+}
+
+impl<L, R, T> ValueDifferentiableKernel<T> for KernelAdd<L, R, T>
+where
+    L: ValueDifferentiableKernel<T>,
+    R: ValueDifferentiableKernel<T>,
+    T: Value,
+{
+    fn ln_diff_value(&self, params: &[f64], x: &T, xprime: &T) -> Result<Vec<f64>, KernelError> {
+        let diff_rhs = &self
+            .rhs
+            .ln_diff_value(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let diff_lhs = &self
+            .lhs
+            .ln_diff_value(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let value_rhs = vec![self.rhs.value(params, x, xprime).unwrap()].col_mat();
+        let value_lhs = vec![self.lhs.value(params, x, xprime).unwrap()].col_mat();
+        let diff = ((&value_rhs * diff_rhs + &value_lhs * diff_lhs)
+            * (&value_rhs + value_lhs)[(0, 0)].powi(-1))
+        .vec();
+        Ok(diff)
+    }
+}
+
+impl<L, R, T> ParamsDifferentiableKernel<T> for KernelAdd<L, R, T>
+where
+    L: ParamsDifferentiableKernel<T>,
+    R: ParamsDifferentiableKernel<T>,
+    T: Value,
+{
+    fn ln_diff_params(&self, params: &[f64], x: &T, xprime: &T) -> Result<Vec<f64>, KernelError> {
+        let diff_rhs = &self
+            .rhs
+            .ln_diff_params(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let diff_lhs = &self
+            .lhs
+            .ln_diff_params(params, x, xprime)
+            .unwrap()
+            .clone()
+            .col_mat();
+        let value_rhs = vec![self.rhs.value(params, x, xprime).unwrap()].col_mat();
+        let value_lhs = vec![self.lhs.value(params, x, xprime).unwrap()].col_mat();
+        let diff = ((&value_rhs * diff_rhs + &value_lhs * diff_lhs)
+            * (&value_rhs + value_lhs)[(0, 0)].powi(-1))
+        .vec();
+        Ok(diff)
     }
 }

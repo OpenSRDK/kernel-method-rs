@@ -1,5 +1,7 @@
 use super::PositiveDefiniteKernel;
-use crate::{KernelAdd, KernelError, KernelMul};
+use crate::{
+    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+};
 use rayon::prelude::*;
 use std::{f64::consts::PI, ops::Add, ops::Mul};
 
@@ -72,6 +74,61 @@ where
 
     fn mul(self, rhs: R) -> Self::Output {
         Self::Output::new(self, rhs)
+    }
+}
+
+impl ValueDifferentiableKernel<Vec<f64>> for SpectralMixture {
+    fn ln_diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let value = self.value(params, x, xprime).unwrap();
+        let w = &params[0..self.q];
+        let v = &params[self.q..self.q + self.p * self.q];
+        let mu = &params[self.q + self.p * self.q..self.q + self.p * self.q + self.p * self.q];
+
+        let diff = (0..self.p)
+            .into_par_iter()
+            .map(|p| {
+                (0..self.q)
+                    .into_par_iter()
+                    .map(|q| {
+                        let each_wd = w[q]
+                            * (0..self.p)
+                                .into_par_iter()
+                                .map(|i| {
+                                    (-2.0
+                                        * PI.powi(2)
+                                        * (x[i] - xprime[i]).powi(2)
+                                        * v[self.p * i + q])
+                                        .exp()
+                                        * (2.0 * PI * (x[i] - xprime[i]) * mu[self.p * i + q]).cos()
+                                })
+                                .product::<f64>();
+                        let diff_d = (4.0 * PI.powi(2) * (x[p] - xprime[p]) * v[self.p * p + q])
+                            + (2.0 * PI * (x[p] - xprime[p]) * mu[self.p * p + q]).tan()
+                                * ((-2.0) * PI * (x[p] - xprime[p]) * mu[self.p * p + q]);
+                        diff_d * each_wd / value
+                    })
+                    .sum()
+            })
+            .collect::<Vec<f64>>();
+
+        Ok(diff)
+    }
+}
+
+impl ParamsDifferentiableKernel<Vec<f64>> for SpectralMixture {
+    fn ln_diff_params(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff = vec![1.0];
+        Ok(diff)
     }
 }
 
