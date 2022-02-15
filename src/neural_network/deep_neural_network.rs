@@ -1,5 +1,8 @@
 use super::ActivationFunction;
-use crate::{Constant, KernelAdd, KernelError, KernelMul, Linear, PositiveDefiniteKernel};
+use crate::{
+    Constant, KernelAdd, KernelError, KernelMul, Linear, ParamsDifferentiableKernel,
+    PositiveDefiniteKernel, ValueDifferentiableKernel,
+};
 use std::{
     fmt::Debug,
     ops::{Add, Mul},
@@ -60,6 +63,28 @@ impl<'a> PositiveDefiniteKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
         }
 
         Ok(previous_layer_kernel.0)
+    }
+}
+
+impl<'a> ValueDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
+    fn ln_diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        todo!()
+    }
+}
+
+impl<'a> ParamsDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
+    fn ln_diff_params(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        todo!()
     }
 }
 
