@@ -1,6 +1,7 @@
 use super::PositiveDefiniteKernel;
 use crate::{
-    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+    KernelAdd, KernelError, KernelMul, LogParamsDifferentiableKernel, LogValueDifferentiableKernel,
+    ParamsDifferentiableKernel, ValueDifferentiableKernel,
 };
 use opensrdk_linear_algebra::Vector;
 use rayon::prelude::*;
@@ -71,7 +72,7 @@ where
     }
 }
 
-impl ValueDifferentiableKernel<Vec<f64>> for RBF {
+impl LogValueDifferentiableKernel<Vec<f64>> for RBF {
     fn ln_diff_value(
         &self,
         params: &[f64],
@@ -83,7 +84,7 @@ impl ValueDifferentiableKernel<Vec<f64>> for RBF {
     }
 }
 
-impl ParamsDifferentiableKernel<Vec<f64>> for RBF {
+impl LogParamsDifferentiableKernel<Vec<f64>> for RBF {
     fn ln_diff_params(
         &self,
         params: &[f64],
@@ -92,6 +93,37 @@ impl ParamsDifferentiableKernel<Vec<f64>> for RBF {
     ) -> Result<Vec<f64>, KernelError> {
         let diff0 = 1.0 / params[0];
         let diff1 = 2.0 * params[1].powi(-2) * &self.norm_pow(params, x, xprime).unwrap();
+        let diff = vec![diff0, diff1];
+        Ok(diff)
+    }
+}
+
+impl ValueDifferentiableKernel<Vec<f64>> for RBF {
+    fn diff_value(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff = (self.value(params, x, xprime).unwrap()
+            * (-2.0 / params[1] * (x.clone().col_mat() - xprime.clone().col_mat())))
+        .vec();
+        Ok(diff)
+    }
+}
+
+impl ParamsDifferentiableKernel<Vec<f64>> for RBF {
+    fn diff_params(
+        &self,
+        params: &[f64],
+        x: &Vec<f64>,
+        xprime: &Vec<f64>,
+    ) -> Result<Vec<f64>, KernelError> {
+        let diff0 = self.value(params, x, xprime).unwrap() / params[0];
+        let diff1 = self.value(params, x, xprime).unwrap()
+            * 2.0
+            * params[1].powi(-2)
+            * &self.norm_pow(params, x, xprime).unwrap();
         let diff = vec![diff0, diff1];
         Ok(diff)
     }
@@ -116,5 +148,22 @@ mod tests {
             .unwrap();
 
         assert_eq!(test_value, (-1f64).exp());
+    }
+    #[test]
+    fn it_works2() {
+        let kernel = RBF;
+
+        //let (func, grad) = kernel
+        //    .value_with_grad(&[1.0, 1.0], &vec![1.0, 2.0, 3.0], &vec![3.0, 2.0, 1.0])
+        //    .unwrap();
+
+        //println!("{}", func);
+        //println!("{:#?}", grad);
+
+        let test_value = kernel
+            .ln_diff_value(&[1.0, 1.0], &vec![1.0, 0.0, 0.0], &vec![0.0, 0.0, 0.0])
+            .unwrap();
+
+        println!("{:?}", test_value);
     }
 }

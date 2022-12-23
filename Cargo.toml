@@ -1,6 +1,6 @@
 [package]
 name = "opensrdk-kernel-method"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["Kimura Yu <33382781+KimuraYu45z@users.noreply.github.com>"]
 edition = "2018"
 description = "Standard Kernel Method library for OpenSRDK toolchain."

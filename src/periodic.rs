@@ -1,6 +1,6 @@
 use super::PositiveDefiniteKernel;
 use crate::{
-    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+    KernelAdd, KernelError, KernelMul, LogParamsDifferentiableKernel, LogValueDifferentiableKernel,
 };
 use opensrdk_linear_algebra::Vector;
 use rayon::prelude::*;
@@ -67,7 +67,7 @@ where
     }
 }
 
-impl ValueDifferentiableKernel<Vec<f64>> for Periodic {
+impl LogValueDifferentiableKernel<Vec<f64>> for Periodic {
     fn ln_diff_value(
         &self,
         params: &[f64],
@@ -82,7 +82,7 @@ impl ValueDifferentiableKernel<Vec<f64>> for Periodic {
     }
 }
 
-impl ParamsDifferentiableKernel<Vec<f64>> for Periodic {
+impl LogParamsDifferentiableKernel<Vec<f64>> for Periodic {
     fn ln_diff_params(
         &self,
         params: &[f64],

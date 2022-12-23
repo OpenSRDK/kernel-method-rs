@@ -1,7 +1,7 @@
 use super::ActivationFunction;
 use crate::{
-    Constant, KernelAdd, KernelError, KernelMul, Linear, ParamsDifferentiableKernel,
-    PositiveDefiniteKernel, ValueDifferentiableKernel,
+    Constant, KernelAdd, KernelError, KernelMul, Linear, LogParamsDifferentiableKernel,
+    LogValueDifferentiableKernel, PositiveDefiniteKernel,
 };
 use std::{
     fmt::Debug,
@@ -66,7 +66,7 @@ impl<'a> PositiveDefiniteKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
     }
 }
 
-impl<'a> ValueDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
+impl<'a> LogValueDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
     fn ln_diff_value(
         &self,
         params: &[f64],
@@ -77,7 +77,7 @@ impl<'a> ValueDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
     }
 }
 
-impl<'a> ParamsDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
+impl<'a> LogParamsDifferentiableKernel<Vec<f64>> for DeepNeuralNetwork<'a> {
     fn ln_diff_params(
         &self,
         params: &[f64],

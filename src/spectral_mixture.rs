@@ -1,6 +1,6 @@
 use super::PositiveDefiniteKernel;
 use crate::{
-    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+    KernelAdd, KernelError, KernelMul, LogParamsDifferentiableKernel, LogValueDifferentiableKernel,
 };
 use rayon::prelude::*;
 use std::{f64::consts::PI, ops::Add, ops::Mul};
@@ -77,7 +77,7 @@ where
     }
 }
 
-impl ValueDifferentiableKernel<Vec<f64>> for SpectralMixture {
+impl LogValueDifferentiableKernel<Vec<f64>> for SpectralMixture {
     fn ln_diff_value(
         &self,
         params: &[f64],
@@ -120,7 +120,7 @@ impl ValueDifferentiableKernel<Vec<f64>> for SpectralMixture {
     }
 }
 
-impl ParamsDifferentiableKernel<Vec<f64>> for SpectralMixture {
+impl LogParamsDifferentiableKernel<Vec<f64>> for SpectralMixture {
     fn ln_diff_params(
         &self,
         params: &[f64],

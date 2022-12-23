@@ -14,7 +14,10 @@ pub use neural_network::{deep_neural_network::*, relu::*};
 pub use periodic::*;
 pub use rbf::*;
 pub use spectral_mixture::*;
-pub use traits::{params_differentiable::*, value_differentiable::*};
+pub use traits::{
+    ln_params_differentiable::*, ln_value_differentiable::*, params_differentiable::*,
+    value_differentiable::*,
+};
 
 use std::fmt::Debug;
 
