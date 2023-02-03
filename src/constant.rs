@@ -1,6 +1,6 @@
 use super::PositiveDefiniteKernel;
 use crate::{KernelAdd, KernelError, KernelMul};
-use crate::{LogParamsDifferentiableKernel, LogValueDifferentiableKernel, Value};
+use crate::{ParamsDifferentiableKernel, Value, ValueDifferentiableKernel};
 use std::fmt::Debug;
 use std::{ops::Add, ops::Mul};
 
@@ -50,7 +50,7 @@ where
     }
 }
 
-impl LogValueDifferentiableKernel<Vec<f64>> for Constant {
+impl ValueDifferentiableKernel<Vec<f64>> for Constant {
     fn ln_diff_value(
         &self,
         _params: &[f64],
@@ -62,7 +62,7 @@ impl LogValueDifferentiableKernel<Vec<f64>> for Constant {
     }
 }
 
-impl LogParamsDifferentiableKernel<Vec<f64>> for Constant {
+impl ParamsDifferentiableKernel<Vec<f64>> for Constant {
     fn ln_diff_params(
         &self,
         _params: &[f64],

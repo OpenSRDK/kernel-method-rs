@@ -1,6 +1,6 @@
 use super::PositiveDefiniteKernel;
 use crate::{
-    KernelAdd, KernelError, KernelMul, LogParamsDifferentiableKernel, LogValueDifferentiableKernel,
+    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
 };
 use opensrdk_linear_algebra::*;
 use rayon::prelude::*;
@@ -56,7 +56,7 @@ where
     }
 }
 
-impl LogValueDifferentiableKernel<Vec<f64>> for Linear {
+impl ValueDifferentiableKernel<Vec<f64>> for Linear {
     fn ln_diff_value(
         &self,
         params: &[f64],
@@ -69,7 +69,7 @@ impl LogValueDifferentiableKernel<Vec<f64>> for Linear {
     }
 }
 
-impl LogParamsDifferentiableKernel<Vec<f64>> for Linear {
+impl ParamsDifferentiableKernel<Vec<f64>> for Linear {
     fn ln_diff_params(
         &self,
         _params: &[f64],

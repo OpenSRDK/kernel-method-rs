@@ -1,7 +1,7 @@
 use crate::KernelError;
-use crate::LogParamsDifferentiableKernel;
-use crate::LogValueDifferentiableKernel;
+use crate::ParamsDifferentiableKernel;
 use crate::Value;
+use crate::ValueDifferentiableKernel;
 use crate::{KernelMul, PositiveDefiniteKernel};
 use opensrdk_linear_algebra::Vector;
 use std::fmt::Debug;
@@ -84,10 +84,10 @@ where
     }
 }
 
-impl<L, R, T> LogValueDifferentiableKernel<T> for KernelAdd<L, R, T>
+impl<L, R, T> ValueDifferentiableKernel<T> for KernelAdd<L, R, T>
 where
-    L: LogValueDifferentiableKernel<T>,
-    R: LogValueDifferentiableKernel<T>,
+    L: ValueDifferentiableKernel<T>,
+    R: ValueDifferentiableKernel<T>,
     T: Value,
 {
     fn ln_diff_value(&self, params: &[f64], x: &T, xprime: &T) -> Result<Vec<f64>, KernelError> {
@@ -112,10 +112,10 @@ where
     }
 }
 
-impl<L, R, T> LogParamsDifferentiableKernel<T> for KernelAdd<L, R, T>
+impl<L, R, T> ParamsDifferentiableKernel<T> for KernelAdd<L, R, T>
 where
-    L: LogParamsDifferentiableKernel<T>,
-    R: LogParamsDifferentiableKernel<T>,
+    L: ParamsDifferentiableKernel<T>,
+    R: ParamsDifferentiableKernel<T>,
     T: Value,
 {
     fn ln_diff_params(&self, params: &[f64], x: &T, xprime: &T) -> Result<Vec<f64>, KernelError> {

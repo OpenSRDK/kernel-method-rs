@@ -1,6 +1,6 @@
 use super::PositiveDefiniteKernel;
 use crate::{
-    KernelAdd, KernelError, KernelMul, LogParamsDifferentiableKernel, LogValueDifferentiableKernel,
+    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
 };
 use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
@@ -58,7 +58,7 @@ where
     }
 }
 
-impl LogValueDifferentiableKernel<Vec<f64>> for ARD {
+impl ValueDifferentiableKernel<Vec<f64>> for ARD {
     fn ln_diff_value(
         &self,
         params: &[f64],
@@ -75,7 +75,7 @@ impl LogValueDifferentiableKernel<Vec<f64>> for ARD {
     }
 }
 
-impl LogParamsDifferentiableKernel<Vec<f64>> for ARD {
+impl ParamsDifferentiableKernel<Vec<f64>> for ARD {
     fn ln_diff_params(
         &self,
         params: &[f64],
