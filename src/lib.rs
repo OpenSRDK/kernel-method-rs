@@ -15,7 +15,7 @@ pub use periodic::*;
 pub use rbf::*;
 pub use spectral_mixture::*;
 pub use traits::{
-    ln_params_differentiable::*, ln_value_differentiable::*, params_differentiable::*,
+    params_differentiable::*, params_differentiable::*, value_differentiable::*,
     value_differentiable::*,
 };
 
