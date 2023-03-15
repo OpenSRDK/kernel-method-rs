@@ -11,6 +11,7 @@ pub use instant::*;
 pub use linear::*;
 pub use mul::*;
 pub use neural_network::{deep_neural_network::*, relu::*};
+use opensrdk_symbolic_computation::Expression;
 pub use periodic::*;
 pub use rbf::*;
 pub use spectral_mixture::*;
@@ -38,13 +39,10 @@ pub mod traits;
 pub trait Value: Clone + Debug + Send + Sync {}
 impl<T> Value for T where T: Clone + Debug + Send + Sync {}
 
-pub trait PositiveDefiniteKernel<T>: Clone + Debug + Send + Sync
-where
-    T: Value,
-{
+pub trait PositiveDefiniteKernel: Clone + Debug + Send + Sync {
     fn params_len(&self) -> usize;
 
-    fn value(&self, params: &[f64], x: &T, xprime: &T) -> Result<f64, KernelError>;
+    fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression;
 }
 
 #[derive(thiserror::Error, Debug)]
