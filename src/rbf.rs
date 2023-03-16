@@ -10,7 +10,7 @@ impl PositiveDefiniteKernel for RBF {
     fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression {
         let diff = x - x_prime;
 
-        (-diff.clone().dot(diff, &[[0, 0]]) / (2.0 * params[0].clone().pow(2.0.into()))).exp()
+        (-diff.clone().dot(diff, &[[0, 0]]) / params[0]).exp()
     }
 
     fn params_len(&self) -> usize {
