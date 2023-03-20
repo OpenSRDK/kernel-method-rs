@@ -1,16 +1,32 @@
 use std::ops::{Add, Mul};
 
+use crate::KernelError;
+
 use super::{KernelAdd, KernelMul, PositiveDefiniteKernel};
 use opensrdk_symbolic_computation::Expression;
+
+const PARAMS_LEN: usize = 1;
 
 #[derive(Clone, Debug)]
 pub struct RBF;
 
 impl PositiveDefiniteKernel for RBF {
-    fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression {
+    fn expression(
+        &self,
+        x: Expression,
+        x_prime: Expression,
+        params: &[Expression],
+    ) -> Result<Expression, KernelError> {
+        if params.len() != PARAMS_LEN {
+            return Err(KernelError::ParametersLengthMismatch.into());
+        }
+        if x.len() != x_prime.len() {
+            return Err(KernelError::InvalidArgument.into());
+        }
+
         let diff = x - x_prime;
 
-        (-diff.clone().dot(diff, &[[0, 0]]) / params[0]).exp()
+        Ok((-diff.clone().dot(diff, &[[0, 0]]) / params[0]).exp())
     }
 
     fn params_len(&self) -> usize {

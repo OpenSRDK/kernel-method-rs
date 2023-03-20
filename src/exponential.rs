@@ -1,108 +1,166 @@
-use super::PositiveDefiniteKernel;
-use crate::{
-    KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
-};
-use opensrdk_linear_algebra::Vector;
-use rayon::prelude::*;
-use std::{ops::Add, ops::Mul};
+use std::ops::{Add, Mul};
+
+use crate::KernelError;
+
+use super::{KernelAdd, KernelMul, PositiveDefiniteKernel};
+use opensrdk_symbolic_computation::Expression;
 
 const PARAMS_LEN: usize = 1;
 
 #[derive(Clone, Debug)]
 pub struct Exponential;
 
-impl Exponential {
-    fn norm(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
+impl PositiveDefiniteKernel for Exponential {
+    fn expression(
+        &self,
+        x: Expression,
+        x_prime: Expression,
+        params: &[Expression],
+    ) -> Result<Expression, KernelError> {
         if params.len() != PARAMS_LEN {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
-        if x.len() != xprime.len() {
+        if x.len() != x_prime.len() {
             return Err(KernelError::InvalidArgument.into());
         }
 
-        let v = x
-            .par_iter()
-            .zip(xprime.par_iter())
-            .map(|(x_i, xprime_i)| (x_i - xprime_i).powi(2))
-            .sum::<f64>()
-            .sqrt();
+        let diff = x - x_prime;
 
-        Ok(v)
+        Ok((-diff.clone().dot(diff, &[[0, 0]]).sqrt() / params[0]).exp())
     }
-}
 
-impl PositiveDefiniteKernel<Vec<f64>> for Exponential {
     fn params_len(&self) -> usize {
-        PARAMS_LEN
-    }
-
-    fn value(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
-        let norm = self.norm(params, x, xprime)?;
-
-        let fx = (-norm / params[0]).exp();
-
-        Ok(fx)
-    }
-}
-
-impl ValueDifferentiableKernel<Vec<f64>> for Exponential {
-    fn ln_diff_value(
-        &self,
-        params: &[f64],
-        x: &Vec<f64>,
-        xprime: &Vec<f64>,
-    ) -> Result<Vec<f64>, KernelError> {
-        let diff = (-2.0 / params[0] * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
-        Ok(diff)
-    }
-}
-
-impl ParamsDifferentiableKernel<Vec<f64>> for Exponential {
-    fn ln_diff_params(
-        &self,
-        params: &[f64],
-        x: &Vec<f64>,
-        xprime: &Vec<f64>,
-    ) -> Result<Vec<f64>, KernelError> {
-        let diff1 = 2.0 * params[0].powi(-2) * &self.norm(params, x, xprime).unwrap();
-        let diff = vec![diff1];
-        Ok(diff)
+        1
     }
 }
 
 impl<R> Add<R> for Exponential
 where
-    R: PositiveDefiniteKernel<Vec<f64>>,
+    R: PositiveDefiniteKernel,
 {
-    type Output = KernelAdd<Self, R, Vec<f64>>;
+    type Output = KernelAdd<Self, R>;
 
     fn add(self, rhs: R) -> Self::Output {
-        Self::Output::new(self, rhs)
+        KernelAdd::new(self, rhs)
     }
 }
 
 impl<R> Mul<R> for Exponential
 where
-    R: PositiveDefiniteKernel<Vec<f64>>,
+    R: PositiveDefiniteKernel,
 {
-    type Output = KernelMul<Self, R, Vec<f64>>;
+    type Output = KernelMul<Self, R>;
 
     fn mul(self, rhs: R) -> Self::Output {
-        Self::Output::new(self, rhs)
+        KernelMul::new(self, rhs)
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::*;
-    #[test]
-    fn it_works() {
-        let kernel = Exponential;
+// use super::PositiveDefiniteKernel;
+// use crate::{
+//     KernelAdd, KernelError, KernelMul, ParamsDifferentiableKernel, ValueDifferentiableKernel,
+// };
+// use opensrdk_linear_algebra::Vector;
+// use rayon::prelude::*;
+// use std::{ops::Add, ops::Mul};
 
-        let test_value = kernel
-            .value(&[1.0], &vec![1.0, 0.0, 0.0], &vec![0.0, 0.0, 0.0])
-            .unwrap();
+// const PARAMS_LEN: usize = 1;
 
-        assert_eq!(test_value, (-1f64).exp());
-    }
-}
+// #[derive(Clone, Debug)]
+// pub struct Exponential;
+
+// impl Exponential {
+//     fn norm(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
+//         if params.len() != PARAMS_LEN {
+//             return Err(KernelError::ParametersLengthMismatch.into());
+//         }
+//         if x.len() != xprime.len() {
+//             return Err(KernelError::InvalidArgument.into());
+//         }
+
+//         let v = x
+//             .par_iter()
+//             .zip(xprime.par_iter())
+//             .map(|(x_i, xprime_i)| (x_i - xprime_i).powi(2))
+//             .sum::<f64>()
+//             .sqrt();
+
+//         Ok(v)
+//     }
+// }
+
+// impl PositiveDefiniteKernel<Vec<f64>> for Exponential {
+//     fn params_len(&self) -> usize {
+//         PARAMS_LEN
+//     }
+
+//     fn value(&self, params: &[f64], x: &Vec<f64>, xprime: &Vec<f64>) -> Result<f64, KernelError> {
+//         let norm = self.norm(params, x, xprime)?;
+
+//         let fx = (-norm / params[0]).exp();
+
+//         Ok(fx)
+//     }
+// }
+
+// impl ValueDifferentiableKernel<Vec<f64>> for Exponential {
+//     fn ln_diff_value(
+//         &self,
+//         params: &[f64],
+//         x: &Vec<f64>,
+//         xprime: &Vec<f64>,
+//     ) -> Result<Vec<f64>, KernelError> {
+//         let diff = (-2.0 / params[0] * (x.clone().col_mat() - xprime.clone().col_mat())).vec();
+//         Ok(diff)
+//     }
+// }
+
+// impl ParamsDifferentiableKernel<Vec<f64>> for Exponential {
+//     fn ln_diff_params(
+//         &self,
+//         params: &[f64],
+//         x: &Vec<f64>,
+//         xprime: &Vec<f64>,
+//     ) -> Result<Vec<f64>, KernelError> {
+//         let diff1 = 2.0 * params[0].powi(-2) * &self.norm(params, x, xprime).unwrap();
+//         let diff = vec![diff1];
+//         Ok(diff)
+//     }
+// }
+
+// impl<R> Add<R> for Exponential
+// where
+//     R: PositiveDefiniteKernel<Vec<f64>>,
+// {
+//     type Output = KernelAdd<Self, R, Vec<f64>>;
+
+//     fn add(self, rhs: R) -> Self::Output {
+//         Self::Output::new(self, rhs)
+//     }
+// }
+
+// impl<R> Mul<R> for Exponential
+// where
+//     R: PositiveDefiniteKernel<Vec<f64>>,
+// {
+//     type Output = KernelMul<Self, R, Vec<f64>>;
+
+//     fn mul(self, rhs: R) -> Self::Output {
+//         Self::Output::new(self, rhs)
+//     }
+// }
+
+// #[cfg(test)]
+// mod tests {
+//     use crate::*;
+//     #[test]
+//     fn it_works() {
+//         let kernel = Exponential;
+
+//         let test_value = kernel
+//             .value(&[1.0], &vec![1.0, 0.0, 0.0], &vec![0.0, 0.0, 0.0])
+//             .unwrap();
+
+//         assert_eq!(test_value, (-1f64).exp());
+//     }
+// }

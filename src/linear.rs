@@ -1,14 +1,28 @@
 use std::ops::{Add, Mul};
 
+use crate::KernelError;
+
 use super::{KernelAdd, KernelMul, PositiveDefiniteKernel};
 use opensrdk_symbolic_computation::Expression;
 
+const PARAMS_LEN: usize = 0;
 #[derive(Clone, Debug)]
 pub struct Linear;
 
 impl PositiveDefiniteKernel for Linear {
-    fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression {
-        x.clone().dot(x_prime, &[[0, 0]])
+    fn expression(
+        &self,
+        x: Expression,
+        x_prime: Expression,
+        params: &[Expression],
+    ) -> Result<Expression, KernelError> {
+        if params.len() != PARAMS_LEN {
+            return Err(KernelError::ParametersLengthMismatch.into());
+        }
+        if x.len() != x_prime.len() {
+            return Err(KernelError::InvalidArgument.into());
+        }
+        Ok(x.clone().dot(x_prime, &[[0, 0]]))
     }
 
     fn params_len(&self) -> usize {

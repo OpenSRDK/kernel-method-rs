@@ -1,14 +1,29 @@
 use std::ops::{Add, Mul};
 
+use crate::KernelError;
+
 use super::{KernelAdd, KernelMul, PositiveDefiniteKernel};
 use opensrdk_symbolic_computation::Expression;
+
+const PARAMS_LEN: usize = 1;
 
 #[derive(Clone, Debug)]
 pub struct Constant;
 
 impl PositiveDefiniteKernel for Constant {
-    fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression {
-        params[0]
+    fn expression(
+        &self,
+        x: Expression,
+        x_prime: Expression,
+        params: &[Expression],
+    ) -> Result<Expression, KernelError> {
+        if params.len() != PARAMS_LEN {
+            return Err(KernelError::ParametersLengthMismatch.into());
+        }
+        if x.len() != x_prime.len() {
+            return Err(KernelError::InvalidArgument.into());
+        }
+        Ok(params[0])
     }
 
     fn params_len(&self) -> usize {

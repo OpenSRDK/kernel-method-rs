@@ -1,4 +1,4 @@
-use crate::{KernelMul, PositiveDefiniteKernel};
+use crate::{KernelError, KernelMul, PositiveDefiniteKernel};
 use opensrdk_symbolic_computation::Expression;
 use std::fmt::Debug;
 use std::{ops::Add, ops::Mul};
@@ -32,7 +32,12 @@ where
         self.lhs.params_len() + self.rhs.params_len()
     }
 
-    fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression {
+    fn expression(
+        &self,
+        x: Expression,
+        x_prime: Expression,
+        params: &[Expression],
+    ) -> Result<Expression, KernelError> {
         let lhs_params_len = self.lhs.params_len();
         let fx = self.lhs.expression(&params[..lhs_params_len], x, x_prime)?;
         let gx = self.rhs.expression(&params[lhs_params_len..], x, x_prime)?;

@@ -15,10 +15,6 @@ use opensrdk_symbolic_computation::Expression;
 pub use periodic::*;
 pub use rbf::*;
 pub use spectral_mixture::*;
-pub use traits::{
-    params_differentiable::*, params_differentiable::*, value_differentiable::*,
-    value_differentiable::*,
-};
 
 use std::fmt::Debug;
 
@@ -34,7 +30,6 @@ pub mod neural_network;
 pub mod periodic;
 pub mod rbf;
 pub mod spectral_mixture;
-pub mod traits;
 
 pub trait Value: Clone + Debug + Send + Sync {}
 impl<T> Value for T where T: Clone + Debug + Send + Sync {}
@@ -42,7 +37,12 @@ impl<T> Value for T where T: Clone + Debug + Send + Sync {}
 pub trait PositiveDefiniteKernel: Clone + Debug + Send + Sync {
     fn params_len(&self) -> usize;
 
-    fn expression(&self, x: Expression, x_prime: Expression, params: &[Expression]) -> Expression;
+    fn expression(
+        &self,
+        x: Expression,
+        x_prime: Expression,
+        params: &[Expression],
+    ) -> Result<Expression, KernelError>;
 }
 
 #[derive(thiserror::Error, Debug)]

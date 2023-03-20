@@ -1,20 +1,27 @@
-use std::ops::{Add, Mul};
+use std::{
+    marker::PhantomData,
+    ops::{Add, Mul},
+};
+
+use crate::KernelError;
 
 use super::{KernelAdd, KernelMul, PositiveDefiniteKernel};
 use opensrdk_symbolic_computation::Expression;
 
 #[derive(Clone, Debug)]
-pub struct InstantKernel<T, F>
+pub struct InstantKernel<F>
 where
-    T: Value,
-    F: Fn(&[f64], &T, &T) -> Result<Expression, KernelError> + Clone + Send + Sync,
+    F: Fn(&[f64], &Expression, &Expression) -> Result<Expression, KernelError>
+        + Clone
+        + Send
+        + Sync,
 {
     params_len: usize,
     value_function: F,
-    phantom: PhantomData<T>,
+    phantom: PhantomData<Expression>,
 }
 
-impl<T, F> PositiveDefiniteKernel for InstantKernel<T, F> {
+impl<F> PositiveDefiniteKernel for InstantKernel<F> {
     fn expression(
         &self,
         x: Expression,
@@ -29,7 +36,7 @@ impl<T, F> PositiveDefiniteKernel for InstantKernel<T, F> {
     }
 }
 
-impl<R, T, F> Add<R> for InstantKernel<T, F>
+impl<R, F> Add<R> for InstantKernel<F>
 where
     R: PositiveDefiniteKernel,
 {
@@ -40,7 +47,7 @@ where
     }
 }
 
-impl<R, T, F> Mul<R> for InstantKernel<T, F>
+impl<R, F> Mul<R> for InstantKernel<F>
 where
     R: PositiveDefiniteKernel,
 {
