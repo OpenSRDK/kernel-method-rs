@@ -20,13 +20,18 @@ impl PositiveDefiniteKernel for Exponential {
         if params.len() != PARAMS_LEN {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
-        if x.len() != x_prime.len() {
-            return Err(KernelError::InvalidArgument.into());
-        }
+        // if x.len() != x_prime.len() {
+        //     return Err(KernelError::InvalidArgument.into());
+        // }
 
         let diff = x - x_prime;
 
-        Ok((-diff.clone().dot(diff, &[[0, 0]]).sqrt() / params[0]).exp())
+        Ok((-diff
+            .clone()
+            .dot(diff, &[[0, 0]])
+            .pow(Expression::from(1.0 / 2.0))
+            / params[0])
+            .exp())
     }
 
     fn params_len(&self) -> usize {

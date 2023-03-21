@@ -20,9 +20,9 @@ impl PositiveDefiniteKernel for RBF {
         if params.len() != PARAMS_LEN {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
-        if x.len() != x_prime.len() {
-            return Err(KernelError::InvalidArgument.into());
-        }
+        // if x.len() != x_prime.len() {
+        //     return Err(KernelError::InvalidArgument.into());
+        // }
 
         let diff = x - x_prime;
 

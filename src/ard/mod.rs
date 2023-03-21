@@ -31,9 +31,9 @@ impl PositiveDefiniteKernel for ARD {
         if params.len() != self.0 {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
-        if x.len() != self.0 || x_prime.len() != self.0 {
-            return Err(KernelError::InvalidArgument.into());
-        }
+        // if x.len() != self.0 || x_prime.len() != self.0 {
+        //     return Err(KernelError::InvalidArgument.into());
+        // }
 
         let fx = (-weighted_norm_pow(&params, x, x_prime)).exp();
 

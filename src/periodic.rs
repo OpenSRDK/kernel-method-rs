@@ -20,12 +20,12 @@ impl PositiveDefiniteKernel for Periodic {
         if params.len() != PARAMS_LEN {
             return Err(KernelError::ParametersLengthMismatch.into());
         }
-        if x.len() != x_prime.len() {
-            return Err(KernelError::InvalidArgument.into());
-        }
+        // if x.len() != x_prime.len() {
+        //     return Err(KernelError::InvalidArgument.into());
+        // }
         let diff = x - x_prime;
 
-        Ok((params[0] * (diff.clone().dot(diff, &[[0, 0]]).sqrt() / params[1]).cos()).exp())
+        Ok((params[0] * (diff.clone().dot(diff, &[[0, 0]]).pow(Expression::from(1.0 / 2.0)) / params[1]).cos()).exp())
     }
 
     fn params_len(&self) -> usize {

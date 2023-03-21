@@ -49,8 +49,8 @@ where
 
     fn expression(
         &self,
-        x: &Expression,
-        x_prime: &Expression,
+        x: Expression,
+        x_prime: Expression,
         params: &[Expression],
     ) -> Result<Expression, KernelError> {
         if params.len() != self.kernel.params_len() {
@@ -63,7 +63,10 @@ where
 
         let fx = (0..p)
             .into_par_iter()
-            .map(|pi| self.kernel.expression(x.part(pi), x_prime.part(pi), params))
+            .map(|pi| {
+                self.kernel
+                    .expression(x.part(pi).clone(), x_prime.part(pi).clone(), params)
+            })
             .sum::<Result<Expression, KernelError>>()?;
 
         Ok(fx)

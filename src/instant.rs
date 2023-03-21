@@ -5,30 +5,50 @@ use std::{
 
 use crate::KernelError;
 
+use std::fmt::Debug;
+
 use super::{KernelAdd, KernelMul, PositiveDefiniteKernel};
 use opensrdk_symbolic_computation::Expression;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct InstantKernel<F>
 where
-    F: Fn(&[f64], &Expression, &Expression) -> Result<Expression, KernelError>
+    F: Fn(&Expression, &Expression, &[Expression]) -> Result<Expression, KernelError>
         + Clone
         + Send
         + Sync,
 {
     params_len: usize,
-    value_function: F,
+    function: F,
     phantom: PhantomData<Expression>,
 }
 
-impl<F> PositiveDefiniteKernel for InstantKernel<F> {
+impl<F> Debug for InstantKernel<F>
+where
+    F: Fn(&Expression, &Expression, &[Expression]) -> Result<Expression, KernelError>
+        + Clone
+        + Send
+        + Sync,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "InstantKernel {{ params_len: {} }}", self.params_len)
+    }
+}
+
+impl<F> PositiveDefiniteKernel for InstantKernel<F>
+where
+    F: Fn(&Expression, &Expression, &[Expression]) -> Result<Expression, KernelError>
+        + Clone
+        + Send
+        + Sync,
+{
     fn expression(
         &self,
         x: Expression,
         x_prime: Expression,
         params: &[Expression],
     ) -> Result<Expression, KernelError> {
-        (self.value_function)(params, x, x_prime)
+        (self.function)(&x, &x_prime, params)
     }
 
     fn params_len(&self) -> usize {
@@ -39,6 +59,10 @@ impl<F> PositiveDefiniteKernel for InstantKernel<F> {
 impl<R, F> Add<R> for InstantKernel<F>
 where
     R: PositiveDefiniteKernel,
+    F: Fn(&Expression, &Expression, &[Expression]) -> Result<Expression, KernelError>
+        + Clone
+        + Send
+        + Sync,
 {
     type Output = KernelAdd<Self, R>;
 
@@ -49,6 +73,10 @@ where
 
 impl<R, F> Mul<R> for InstantKernel<F>
 where
+    F: Fn(&Expression, &Expression, &[Expression]) -> Result<Expression, KernelError>
+        + Clone
+        + Send
+        + Sync,
     R: PositiveDefiniteKernel,
 {
     type Output = KernelMul<Self, R>;

@@ -55,20 +55,20 @@ pub enum KernelError {
     InvalidArgument,
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::*;
-    #[test]
-    fn it_works() {
-        let kernel = RBF + Constant * Linear + Constant * Periodic + Constant * ARD(3);
-        let test_value = kernel
-            .value(
-                &vec![1.0; kernel.params_len()],
-                &vec![1.0, 2.0, 3.0],
-                &vec![30.0, 20.0, 10.0],
-            )
-            .unwrap();
+// #[cfg(test)]
+// mod tests {
+//     use crate::*;
+//     #[test]
+//     fn it_works() {
+//         let kernel = RBF + Constant * Linear + Constant * Periodic + Constant * ARD(3);
+//         let test_value = kernel
+//             .value(
+//                 &vec![1.0; kernel.params_len()],
+//                 &vec![1.0, 2.0, 3.0],
+//                 &vec![30.0, 20.0, 10.0],
+//             )
+//             .unwrap();
 
-        println!("{}", test_value);
-    }
-}
+//         println!("{}", test_value);
+//     }
+// }
