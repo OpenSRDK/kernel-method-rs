@@ -39,7 +39,9 @@ where
         params: &[Expression],
     ) -> Result<Expression, KernelError> {
         let lhs_params_len = self.lhs.params_len();
-        let fx = self.lhs.expression(x, x_prime, &params[..lhs_params_len])?;
+        let fx = self
+            .lhs
+            .expression(x.clone(), x_prime.clone(), &params[..lhs_params_len])?;
         let gx = self.rhs.expression(x, x_prime, &params[lhs_params_len..])?;
 
         let hx = fx + gx;

@@ -30,8 +30,8 @@ impl PositiveDefiniteKernel for Exponential {
             .clone()
             .dot(diff, &[[0, 0]])
             .pow(Expression::from(1.0 / 2.0))
-            / params[0])
-            .exp())
+            / params[0].clone())
+        .exp())
     }
 
     fn params_len(&self) -> usize {

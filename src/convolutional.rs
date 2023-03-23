@@ -61,15 +61,20 @@ where
             return Err(KernelError::InvalidArgument.into());
         }
 
-        let fx = (0..p)
-            .into_par_iter()
-            .map(|pi| {
-                self.kernel
-                    .expression(x.part(pi).clone(), x_prime.part(pi).clone(), params)
-            })
-            .sum::<Result<Expression, KernelError>>()?;
+        todo!()
 
-        Ok(fx)
+        // let fx = (0..p)
+        //     .into_par_iter()
+        //     .map(|pi| {
+        //         let expression = self
+        //             .kernel
+        //             .expression(x.part(pi).clone(), x_prime.part(pi).clone(), params)
+        //             .unwrap();
+        //         expression
+        //     })
+        //     .sum::<Result<Expression, KernelError>>()?;
+
+        // Ok(fx)
     }
 }
 

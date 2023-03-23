@@ -28,34 +28,35 @@ impl PositiveDefiniteKernel for SpectralMixture {
         x_prime: Expression,
         params: &[Expression],
     ) -> Result<Expression, KernelError> {
-        if params.len() != self.params_len() {
-            return Err(KernelError::ParametersLengthMismatch.into());
-        }
-        if self.p != x.len() {
-            return Err(KernelError::ParametersLengthMismatch.into());
-        }
-        if x.len() != x_prime.len() {
-            return Err(KernelError::InvalidArgument.into());
-        }
+        todo!()
+        // if params.len() != self.params_len() {
+        //     return Err(KernelError::ParametersLengthMismatch.into());
+        // }
+        // if self.p != x.len() {
+        //     return Err(KernelError::ParametersLengthMismatch.into());
+        // }
+        // if x.len() != x_prime.len() {
+        //     return Err(KernelError::InvalidArgument.into());
+        // }
 
-        let w = &params[0..self.q];
-        let v = &params[self.q..self.q + self.p * self.q];
-        let mu = &params[self.q + self.p * self.q..self.q + self.p * self.q + self.p * self.q];
+        // let w = &params[0..self.q];
+        // let v = &params[self.q..self.q + self.p * self.q];
+        // let mu = &params[self.q + self.p * self.q..self.q + self.p * self.q + self.p * self.q];
 
-        let fx = (0..self.q)
-            .into_par_iter()
-            .map(|q| {
-                w[q] * (0..self.p)
-                    .into_par_iter()
-                    .map(|p| {
-                        (-2.0 * PI.powi(2) * (x[p] - x_prime[p]).powi(2) * v[self.p * p + q]).exp()
-                            * (2.0 * PI * (x[p] - x_prime[p]) * mu[self.p * p + q]).cos()
-                    })
-                    .product::<f64>()
-            })
-            .sum();
+        // let fx = (0..self.q)
+        //     .into_par_iter()
+        //     .map(|q| {
+        //         w[q] * (0..self.p)
+        //             .into_par_iter()
+        //             .map(|p| {
+        //                 (-2.0 * PI.powi(2) * (x[p] - x_prime[p]).powi(2) * v[self.p * p + q]).exp()
+        //                     * (2.0 * PI * (x[p] - x_prime[p]) * mu[self.p * p + q]).cos()
+        //             })
+        //             .product::<f64>()
+        //     })
+        // //     .sum();
 
-        Ok(fx)
+        // Ok(fx)
     }
 }
 
@@ -200,24 +201,24 @@ where
 
 //         Ok(diff)
 //     }
+// // }
+
+// #[cfg(test)]
+// mod tests {
+//     use crate::*;
+//     #[test]
+//     fn it_works() {
+//         let kernel = SpectralMixture::new(1, 2);
+
+//         let test_value = kernel.expression(
+//             Expression::from(vec![0.0, 0.0, 0.0]),
+//             Expression::from(vec![0.0, 0.0, 0.0]),
+//             &[Expression::from([1.0]), Expression::from([1.0])],
+//         );
+
+//         match test_value {
+//             Err(KernelError::ParametersLengthMismatch) => (),
+//             _ => panic!(),
+//         };
+//     }
 // }
-
-#[cfg(test)]
-mod tests {
-    use crate::*;
-    #[test]
-    fn it_works() {
-        let kernel = SpectralMixture::new(1, 2);
-
-        let test_value = kernel.expression(
-            Expression::from(vec![0.0, 0.0, 0.0]),
-            Expression::from(vec![0.0, 0.0, 0.0]),
-            &[Expression::from([1.0]), Expression::from([1.0])],
-        );
-
-        match test_value {
-            Err(KernelError::ParametersLengthMismatch) => (),
-            _ => panic!(),
-        };
-    }
-}

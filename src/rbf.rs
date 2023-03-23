@@ -26,7 +26,7 @@ impl PositiveDefiniteKernel for RBF {
 
         let diff = x - x_prime;
 
-        Ok((-diff.clone().dot(diff, &[[0, 0]]) / params[0]).exp())
+        Ok((-diff.clone().dot(diff, &[[0, 0]]) / params[0].clone()).exp())
     }
 
     fn params_len(&self) -> usize {

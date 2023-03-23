@@ -5,12 +5,13 @@ use rayon::prelude::*;
 use std::{ops::Add, ops::Mul};
 
 fn weighted_norm_pow(x: Expression, x_prime: Expression, params: &[Expression]) -> Expression {
-    params
-        .par_iter()
-        .zip(x.par_iter())
-        .zip(x_prime.par_iter())
-        .map(|((relevance, xi), x_primei)| relevance * (xi - x_primei).powi(2))
-        .sum()
+    todo!()
+    // params
+    //     .par_iter()
+    //     .zip(x.par_iter())
+    //     .zip(x_prime.par_iter())
+    //     .map(|((relevance, xi), x_primei)| relevance * (xi - x_primei).powi(2))
+    //     .sum()
 }
 //must rewite this function!
 
@@ -34,10 +35,11 @@ impl PositiveDefiniteKernel for ARD {
         // if x.len() != self.0 || x_prime.len() != self.0 {
         //     return Err(KernelError::InvalidArgument.into());
         // }
+        todo!()
 
-        let fx = (-weighted_norm_pow(&params, x, x_prime)).exp();
+        // let fx = (-weighted_norm_pow(&params, x, x_prime)).exp();
 
-        Ok(fx)
+        // Ok(fx)
     }
 }
 

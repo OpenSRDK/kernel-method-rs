@@ -23,7 +23,7 @@ impl PositiveDefiniteKernel for Constant {
         // if x.len() != x_prime.len() {
         //     return Err(KernelError::InvalidArgument.into());
         // }
-        Ok(params[0])
+        Ok(params[0].clone())
     }
 
     fn params_len(&self) -> usize {

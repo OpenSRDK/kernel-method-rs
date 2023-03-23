@@ -25,7 +25,14 @@ impl PositiveDefiniteKernel for Periodic {
         // }
         let diff = x - x_prime;
 
-        Ok((params[0] * (diff.clone().dot(diff, &[[0, 0]]).pow(Expression::from(1.0 / 2.0)) / params[1]).cos()).exp())
+        Ok((params[0].clone()
+            * (diff
+                .clone()
+                .dot(diff, &[[0, 0]])
+                .pow(Expression::from(1.0 / 2.0))
+                / params[1].clone())
+            .cos())
+        .exp())
     }
 
     fn params_len(&self) -> usize {
