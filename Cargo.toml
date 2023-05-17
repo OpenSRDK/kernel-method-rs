@@ -1,6 +1,6 @@
 [package]
 name = "opensrdk-kernel-method"
-version = "0.2.3"
+version = "0.2.5"
 authors = ["Kimura Yu <33382781+KimuraYu45z@users.noreply.github.com>"]
 edition = "2018"
 description = "Standard Kernel Method library for OpenSRDK toolchain."
@@ -12,6 +12,7 @@ categories = ["mathematics", "science"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+opensrdk-symbolic-computation = "0.2.0"
 rayon = "1.5.1"
 thiserror = "1.0.28"
 opensrdk-linear-algebra = "0.8.2"
