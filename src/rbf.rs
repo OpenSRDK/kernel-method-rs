@@ -161,17 +161,10 @@ where
 //     #[test]
 //     fn it_works() {
 //         let kernel = RBF;
-
-//         //let (func, grad) = kernel
-//         //    .value_with_grad(&[1.0, 1.0], &vec![1.0, 2.0, 3.0], &vec![3.0, 2.0, 1.0])
-//         //    .unwrap();
-
-//         //println!("{}", func);
-//         //println!("{:#?}", grad);
-
-//         let test_value = kernel
-//             .value(&[1.0, 1.0], &vec![1.0, 0.0, 0.0], &vec![0.0, 0.0, 0.0])
-//             .unwrap();
+//         let kernel_diff = kernel
+//             .expression(theta_array, samples_array, &kernel_params_expression)
+//             .unwrap()
+//             .ln();
 
 //         assert_eq!(test_value, (-1f64).exp());
 //     }
